@@ -5,12 +5,17 @@ import { Icon, Label, NativeTabs } from "expo-router/unstable-native-tabs";
 import { SymbolView } from "expo-symbols";
 import { Feather } from "@expo/vector-icons";
 import React, { useEffect } from "react";
-import { Platform, StyleSheet, View, useColorScheme } from "react-native";
+import { Platform, StyleSheet, Text, View, useColorScheme } from "react-native";
 import { router } from "expo-router";
 import { useApp } from "@/context/AppContext";
 import C from "@/constants/colors";
 
 function NativeTabLayout() {
+  const { data, currentClientId } = useApp();
+  const pendingCount = (data.customPrograms || []).filter(
+    (p) => p.clientId === currentClientId && (p.status === "requested" || p.status === "draft")
+  ).length;
+
   return (
     <NativeTabs>
       <NativeTabs.Trigger name="index">
@@ -25,6 +30,10 @@ function NativeTabLayout() {
         <Icon sf={{ default: "trophy", selected: "trophy.fill" }} />
         <Label>Challenges</Label>
       </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="programs">
+        <Icon sf={{ default: "doc.text", selected: "doc.text.fill" }} />
+        <Label>Programs</Label>
+      </NativeTabs.Trigger>
       <NativeTabs.Trigger name="messages">
         <Icon sf={{ default: "message", selected: "message.fill" }} />
         <Label>Messages</Label>
@@ -34,7 +43,11 @@ function NativeTabLayout() {
 }
 
 function ClassicTabLayout() {
-  const isDark = true;
+  const { data, currentClientId } = useApp();
+  const programCount = (data.customPrograms || []).filter(
+    (p) => p.clientId === currentClientId && p.status === "delivered"
+  ).length;
+
   const isIOS = Platform.OS === "ios";
   const isWeb = Platform.OS === "web";
 
@@ -100,6 +113,20 @@ function ClassicTabLayout() {
             ) : (
               <Feather name="award" size={22} color={color} />
             ),
+        }}
+      />
+      <Tabs.Screen
+        name="programs"
+        options={{
+          title: "Programs",
+          tabBarIcon: ({ color }) =>
+            isIOS ? (
+              <SymbolView name="doc.text" tintColor={color} size={24} />
+            ) : (
+              <Feather name="file-text" size={22} color={color} />
+            ),
+          tabBarBadge: programCount > 0 ? programCount : undefined,
+          tabBarBadgeStyle: { backgroundColor: C.orange },
         }}
       />
       <Tabs.Screen

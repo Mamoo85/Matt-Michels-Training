@@ -133,6 +133,18 @@ export interface HelpRequest {
   status: "pending" | "replied";
 }
 
+export interface CustomProgram {
+  id: string;
+  clientId: number;
+  title: string;
+  notes: string;
+  exercises: ExerciseItem[];
+  status: "requested" | "draft" | "delivered";
+  requestedAt: string;
+  createdAt?: string;
+  deliveredAt?: string;
+}
+
 export interface HomeContent {
   wordsFromMatt: string;
   monthlyFocus: string;
@@ -150,6 +162,7 @@ export interface AppData {
   assessments: Assessment[];
   worksheets: Worksheet[];
   helpRequests: HelpRequest[];
+  customPrograms: CustomProgram[];
   nextId: number;
   homeContent: HomeContent;
 }
@@ -210,6 +223,15 @@ export const DEFAULT_SESSION_TYPES: SessionType[] = [
     type: "stuck",
     active: true,
   },
+  {
+    id: "st_6",
+    name: "Team Program Consultation",
+    description: "Custom program for any team, any sport, any age. On-site or remote.",
+    duration: 60,
+    price: 200,
+    type: "team",
+    active: true,
+  },
 ];
 
 export const EMPTY: AppData = {
@@ -221,6 +243,7 @@ export const EMPTY: AppData = {
   assessments: [],
   worksheets: [],
   helpRequests: [],
+  customPrograms: [],
   nextId: 1,
   homeContent: DEFAULT_HOME,
 };
@@ -299,6 +322,7 @@ export async function loadData(): Promise<AppData> {
     if (!parsed.homeContent) parsed.homeContent = DEFAULT_HOME;
     if (!parsed.helpRequests) parsed.helpRequests = [];
     if (!parsed.sessionTypes) parsed.sessionTypes = DEFAULT_SESSION_TYPES;
+    if (!parsed.customPrograms) parsed.customPrograms = [];
     return parsed;
   } catch {
     return EMPTY;

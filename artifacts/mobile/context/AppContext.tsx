@@ -11,6 +11,7 @@ import {
   Booking,
   Client,
   Challenge,
+  CustomProgram,
   HelpRequest,
   HomeContent,
   Message,
@@ -62,6 +63,9 @@ interface AppContextValue {
   submitAssessment: (a: Assessment) => void;
   saveWorksheet: (ws: Worksheet) => void;
   submitHelpRequest: (r: HelpRequest) => void;
+  requestProgram: (clientId: number) => void;
+  saveProgram: (program: CustomProgram) => void;
+  deliverProgram: (programId: string) => void;
 }
 
 const AppContext = createContext<AppContextValue | null>(null);
@@ -244,6 +248,53 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     [updateData]
   );
 
+  const requestProgram = useCallback(
+    (clientId: number) => {
+      updateData((d) => {
+        if (!d.customPrograms) d.customPrograms = [];
+        d.customPrograms.push({
+          id: uid(),
+          clientId,
+          title: "",
+          notes: "",
+          exercises: [],
+          status: "requested",
+          requestedAt: nowTs(),
+        });
+        return d;
+      });
+    },
+    [updateData]
+  );
+
+  const saveProgram = useCallback(
+    (program: CustomProgram) => {
+      updateData((d) => {
+        if (!d.customPrograms) d.customPrograms = [];
+        const i = d.customPrograms.findIndex((p) => p.id === program.id);
+        if (i > -1) d.customPrograms[i] = program;
+        else d.customPrograms.push(program);
+        return d;
+      });
+    },
+    [updateData]
+  );
+
+  const deliverProgram = useCallback(
+    (programId: string) => {
+      updateData((d) => {
+        if (!d.customPrograms) d.customPrograms = [];
+        const p = d.customPrograms.find((x) => x.id === programId);
+        if (p) {
+          p.status = "delivered";
+          p.deliveredAt = nowTs();
+        }
+        return d;
+      });
+    },
+    [updateData]
+  );
+
   return (
     <AppContext.Provider
       value={{
@@ -263,6 +314,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         submitAssessment,
         saveWorksheet,
         submitHelpRequest,
+        requestProgram,
+        saveProgram,
+        deliverProgram,
       }}
     >
       {children}

@@ -18,10 +18,10 @@ import { LIFTS, fmt, fmtS, today, uid } from "@/utils/storage";
 import { Tag } from "@/components/ui/Tag";
 import { LiftChart } from "@/components/LiftChart";
 
-type ClientView = "overview" | "log" | "messages" | "assessments";
+type ClientView = "overview" | "log" | "messages" | "assessments" | "programs";
 
 export default function ClientsScreen() {
-  const { data, updateData, logout } = useApp();
+  const { data, updateData, logout, saveProgram, deliverProgram } = useApp();
   const insets = useSafeAreaInsets();
   const [selId, setSelId] = useState<number | null>(null);
   const [view, setView] = useState<ClientView>("overview");
@@ -46,6 +46,21 @@ export default function ClientsScreen() {
   const [replyText, setReplyText] = useState("");
 
   const [activeLift, setActiveLift] = useState(LIFTS[0]);
+
+  // Program builder
+  const [pgTitle, setPgTitle] = useState("");
+  const [pgNotes, setPgNotes] = useState("");
+  const [pgExName, setPgExName] = useState("");
+  const [pgExSets, setPgExSets] = useState("");
+  const [pgExReps, setPgExReps] = useState("");
+  const [pgExWeight, setPgExWeight] = useState("");
+  const [pgExRest, setPgExRest] = useState("");
+  const [pgExCues, setPgExCues] = useState("");
+  const [pgExercises, setPgExercises] = useState<Array<{
+    id: string; name: string; sets: string; reps: string; weight: string; rest: string; coachingCues: string;
+  }>>([]);
+  const [pgEditId, setPgEditId] = useState<string | null>(null);
+  const [pgOk, setPgOk] = useState("");
 
   const clients = data.clients.filter((c) =>
     !search.trim() ||
@@ -268,13 +283,14 @@ export default function ClientsScreen() {
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.viewTabs}
           >
-            {(["overview", "log", "messages", "assessments"] as ClientView[]).map(
+            {(["overview", "log", "messages", "assessments", "programs"] as ClientView[]).map(
               (v) => {
                 const labels: Record<ClientView, string> = {
                   overview: "Overview",
                   log: "Log Lift",
                   messages: "Messages",
                   assessments: "Assessments",
+                  programs: "Programs",
                 };
                 return (
                   <Pressable
@@ -645,6 +661,363 @@ export default function ClientsScreen() {
                     </View>
                   ))
               )}
+            </ScrollView>
+          )}
+
+          {/* PROGRAMS */}
+          {view === "programs" && (
+            <ScrollView
+              contentContainerStyle={[
+                styles.scroll,
+                {
+                  paddingBottom:
+                    (Platform.OS === "web" ? 34 : insets.bottom) + 100,
+                },
+              ]}
+              keyboardShouldPersistTaps="handled"
+            >
+              {!!pgOk && (
+                <View style={styles.successBanner}>
+                  <Feather name="check-circle" size={16} color={C.green} />
+                  <Text style={styles.successText}>{pgOk}</Text>
+                </View>
+              )}
+
+              {/* Existing programs for this client */}
+              {(() => {
+                const clientPrograms = (data.customPrograms || [])
+                  .filter((p) => p.clientId === selId)
+                  .sort((a, b) => b.requestedAt.localeCompare(a.requestedAt));
+                if (clientPrograms.length > 0) {
+                  return (
+                    <View style={{ marginBottom: 20 }}>
+                      <Text style={styles.sectionLabel}>EXISTING PROGRAMS</Text>
+                      {clientPrograms.map((p) => (
+                        <View key={p.id} style={styles.pgExistingCard}>
+                          <View style={{ flex: 1 }}>
+                            <Text style={styles.pgExistingTitle}>
+                              {p.title || "Untitled Program"}
+                            </Text>
+                            <Text style={styles.pgExistingMeta}>
+                              {p.status === "requested"
+                                ? "Requested"
+                                : p.status === "draft"
+                                ? "Draft"
+                                : "Delivered"}
+                              {p.exercises.length > 0
+                                ? ` · ${p.exercises.length} exercises`
+                                : ""}
+                            </Text>
+                          </View>
+                          <View style={styles.pgExistingActions}>
+                            {p.status !== "delivered" && (
+                              <>
+                                <Pressable
+                                  style={[styles.pgDeliverBtn, { backgroundColor: C.surface, borderWidth: 1, borderColor: C.border }]}
+                                  onPress={() => {
+                                    setPgEditId(p.id);
+                                    setPgTitle(p.title || "");
+                                    setPgNotes(p.notes || "");
+                                    setPgExercises(
+                                      p.exercises.map((ex) => ({
+                                        id: ex.id || uid(),
+                                        name: ex.name,
+                                        sets: ex.sets || "",
+                                        reps: ex.reps || "",
+                                        weight: ex.weight || "",
+                                        rest: ex.rest || "",
+                                        coachingCues: ex.coachingCues || "",
+                                      }))
+                                    );
+                                  }}
+                                >
+                                  <Feather name="edit-2" size={12} color={C.dim} />
+                                  <Text style={[styles.pgDeliverBtnText, { color: C.dim }]}>Edit</Text>
+                                </Pressable>
+                                <Pressable
+                                  style={styles.pgDeliverBtn}
+                                  onPress={() => {
+                                    if (p.exercises.length === 0) {
+                                      setPgOk("Add exercises before delivering.");
+                                      setTimeout(() => setPgOk(""), 3000);
+                                      return;
+                                    }
+                                    deliverProgram(p.id);
+                                    Haptics.notificationAsync(
+                                      Haptics.NotificationFeedbackType.Success
+                                    );
+                                    setPgOk("Program delivered!");
+                                    setTimeout(() => setPgOk(""), 3000);
+                                  }}
+                                >
+                                  <Feather name="send" size={12} color={C.white} />
+                                  <Text style={styles.pgDeliverBtnText}>Deliver</Text>
+                                </Pressable>
+                              </>
+                            )}
+                            {p.status === "delivered" && (
+                              <Tag label="Delivered" color={C.green} />
+                            )}
+                          </View>
+                        </View>
+                      ))}
+                    </View>
+                  );
+                }
+                return null;
+              })()}
+
+              {/* BUILD NEW PROGRAM */}
+              <Text style={styles.sectionLabel}>
+                {pgEditId ? "EDIT PROGRAM" : "BUILD NEW PROGRAM"}
+              </Text>
+              <View style={styles.pgBuilder}>
+                <Text style={styles.fieldLabel}>Program Title *</Text>
+                <TextInput
+                  style={styles.input}
+                  value={pgTitle}
+                  onChangeText={setPgTitle}
+                  placeholder="e.g. Off-Season Strength Phase 1"
+                  placeholderTextColor={C.muted}
+                />
+
+                <Text style={styles.fieldLabel}>Notes for Client</Text>
+                <TextInput
+                  style={[styles.input, { minHeight: 60 }]}
+                  value={pgNotes}
+                  onChangeText={setPgNotes}
+                  placeholder="Overall coaching notes..."
+                  placeholderTextColor={C.muted}
+                  multiline
+                />
+
+                {/* EXERCISE LIST */}
+                {pgExercises.length > 0 && (
+                  <View style={{ marginBottom: 14 }}>
+                    <Text style={styles.fieldLabel}>
+                      Exercises ({pgExercises.length})
+                    </Text>
+                    {pgExercises.map((ex, i) => (
+                      <View key={ex.id} style={styles.pgExRow}>
+                        <View style={styles.pgExNum}>
+                          <Text style={styles.pgExNumText}>{i + 1}</Text>
+                        </View>
+                        <View style={{ flex: 1 }}>
+                          <Text style={styles.pgExRowName}>{ex.name}</Text>
+                          <Text style={styles.pgExRowDetail}>
+                            {[
+                              ex.sets && `${ex.sets}s`,
+                              ex.reps && `${ex.reps}r`,
+                              ex.weight,
+                              ex.rest && `rest ${ex.rest}`,
+                            ]
+                              .filter(Boolean)
+                              .join(" · ")}
+                          </Text>
+                        </View>
+                        <Pressable
+                          onPress={() => {
+                            setPgExercises((prev) =>
+                              prev.filter((x) => x.id !== ex.id)
+                            );
+                          }}
+                        >
+                          <Feather name="trash-2" size={14} color={C.red} />
+                        </Pressable>
+                      </View>
+                    ))}
+                  </View>
+                )}
+
+                {/* ADD EXERCISE FORM */}
+                <View style={styles.pgAddExCard}>
+                  <Text style={styles.pgAddExTitle}>Add Exercise</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={pgExName}
+                    onChangeText={setPgExName}
+                    placeholder="Exercise name *"
+                    placeholderTextColor={C.muted}
+                  />
+                  <View style={styles.row2}>
+                    <View style={{ flex: 1 }}>
+                      <TextInput
+                        style={styles.input}
+                        value={pgExSets}
+                        onChangeText={setPgExSets}
+                        placeholder="Sets"
+                        placeholderTextColor={C.muted}
+                        keyboardType="numeric"
+                      />
+                    </View>
+                    <View style={{ flex: 1, marginLeft: 8 }}>
+                      <TextInput
+                        style={styles.input}
+                        value={pgExReps}
+                        onChangeText={setPgExReps}
+                        placeholder="Reps"
+                        placeholderTextColor={C.muted}
+                        keyboardType="numeric"
+                      />
+                    </View>
+                  </View>
+                  <View style={styles.row2}>
+                    <View style={{ flex: 1 }}>
+                      <TextInput
+                        style={styles.input}
+                        value={pgExWeight}
+                        onChangeText={setPgExWeight}
+                        placeholder="Weight / load"
+                        placeholderTextColor={C.muted}
+                      />
+                    </View>
+                    <View style={{ flex: 1, marginLeft: 8 }}>
+                      <TextInput
+                        style={styles.input}
+                        value={pgExRest}
+                        onChangeText={setPgExRest}
+                        placeholder="Rest (e.g. 90s)"
+                        placeholderTextColor={C.muted}
+                      />
+                    </View>
+                  </View>
+                  <TextInput
+                    style={[styles.input, { minHeight: 50 }]}
+                    value={pgExCues}
+                    onChangeText={setPgExCues}
+                    placeholder="Coaching cues (optional)"
+                    placeholderTextColor={C.muted}
+                    multiline
+                  />
+                  <Pressable
+                    style={[
+                      styles.pgAddExBtn,
+                      !pgExName.trim() && { opacity: 0.4 },
+                    ]}
+                    disabled={!pgExName.trim()}
+                    onPress={() => {
+                      setPgExercises((prev) => [
+                        ...prev,
+                        {
+                          id: uid(),
+                          name: pgExName.trim(),
+                          sets: pgExSets,
+                          reps: pgExReps,
+                          weight: pgExWeight,
+                          rest: pgExRest,
+                          coachingCues: pgExCues,
+                        },
+                      ]);
+                      setPgExName("");
+                      setPgExSets("");
+                      setPgExReps("");
+                      setPgExWeight("");
+                      setPgExRest("");
+                      setPgExCues("");
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    }}
+                  >
+                    <Feather name="plus" size={14} color={C.white} />
+                    <Text style={styles.pgAddExBtnText}>Add Exercise</Text>
+                  </Pressable>
+                </View>
+
+                {/* SAVE / DELIVER */}
+                <View style={{ gap: 8, marginTop: 10 }}>
+                  <Pressable
+                    style={[
+                      styles.logBtn,
+                      (!pgTitle.trim() || pgExercises.length === 0) && {
+                        opacity: 0.4,
+                      },
+                    ]}
+                    disabled={!pgTitle.trim() || pgExercises.length === 0}
+                    onPress={() => {
+                      const prog = {
+                        id: pgEditId || uid(),
+                        clientId: selId!,
+                        title: pgTitle.trim(),
+                        notes: pgNotes.trim(),
+                        exercises: pgExercises.map((ex) => ({
+                          id: ex.id,
+                          name: ex.name,
+                          sets: ex.sets,
+                          reps: ex.reps,
+                          weight: ex.weight,
+                          rest: ex.rest,
+                          coachingCues: ex.coachingCues,
+                        })),
+                        status: "draft" as const,
+                        requestedAt:
+                          (data.customPrograms || []).find(
+                            (p) => p.id === pgEditId
+                          )?.requestedAt || new Date().toISOString(),
+                      };
+                      saveProgram(prog);
+                      Haptics.notificationAsync(
+                        Haptics.NotificationFeedbackType.Success
+                      );
+                      setPgOk("Program saved as draft!");
+                      setPgTitle("");
+                      setPgNotes("");
+                      setPgExercises([]);
+                      setPgEditId(null);
+                      setTimeout(() => setPgOk(""), 3000);
+                    }}
+                  >
+                    <Text style={styles.logBtnText}>Save as Draft</Text>
+                  </Pressable>
+
+                  <Pressable
+                    style={[
+                      styles.logBtn,
+                      { backgroundColor: C.green },
+                      (!pgTitle.trim() || pgExercises.length === 0) && {
+                        opacity: 0.4,
+                      },
+                    ]}
+                    disabled={!pgTitle.trim() || pgExercises.length === 0}
+                    onPress={() => {
+                      const progId = pgEditId || uid();
+                      const prog = {
+                        id: progId,
+                        clientId: selId!,
+                        title: pgTitle.trim(),
+                        notes: pgNotes.trim(),
+                        exercises: pgExercises.map((ex) => ({
+                          id: ex.id,
+                          name: ex.name,
+                          sets: ex.sets,
+                          reps: ex.reps,
+                          weight: ex.weight,
+                          rest: ex.rest,
+                          coachingCues: ex.coachingCues,
+                        })),
+                        status: "delivered" as const,
+                        requestedAt:
+                          (data.customPrograms || []).find(
+                            (p) => p.id === pgEditId
+                          )?.requestedAt || new Date().toISOString(),
+                        deliveredAt: new Date().toISOString(),
+                      };
+                      saveProgram(prog);
+                      Haptics.notificationAsync(
+                        Haptics.NotificationFeedbackType.Success
+                      );
+                      setPgOk("Program delivered to client!");
+                      setPgTitle("");
+                      setPgNotes("");
+                      setPgExercises([]);
+                      setPgEditId(null);
+                      setTimeout(() => setPgOk(""), 3000);
+                    }}
+                  >
+                    <Text style={styles.logBtnText}>
+                      Save & Deliver to Client
+                    </Text>
+                  </Pressable>
+                </View>
+              </View>
             </ScrollView>
           )}
         </View>
@@ -1137,6 +1510,112 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 8,
+  },
+  pgExistingCard: {
+    backgroundColor: C.surface,
+    borderWidth: 1,
+    borderColor: C.border,
+    borderRadius: 8,
+    padding: 14,
+    marginBottom: 8,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  pgExistingTitle: {
+    color: C.text,
+    fontSize: 14,
+    fontFamily: "Inter_600SemiBold",
+    marginBottom: 2,
+  },
+  pgExistingMeta: {
+    color: C.dim,
+    fontSize: 11,
+    fontFamily: "Inter_400Regular",
+  },
+  pgExistingActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  pgDeliverBtn: {
+    backgroundColor: C.green,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 6,
+  },
+  pgDeliverBtnText: {
+    color: C.white,
+    fontSize: 11,
+    fontFamily: "Inter_600SemiBold",
+  },
+  pgBuilder: {
+    backgroundColor: C.surface,
+    borderWidth: 1,
+    borderColor: C.border,
+    borderRadius: 10,
+    padding: 16,
+  },
+  pgExRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: C.border,
+  },
+  pgExNum: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: `${C.orange}22`,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  pgExNumText: {
+    color: C.orange,
+    fontSize: 11,
+    fontFamily: "Inter_700Bold",
+  },
+  pgExRowName: {
+    color: C.text,
+    fontSize: 13,
+    fontFamily: "Inter_600SemiBold",
+  },
+  pgExRowDetail: {
+    color: C.dim,
+    fontSize: 11,
+    fontFamily: "Inter_400Regular",
+  },
+  pgAddExCard: {
+    backgroundColor: `${C.orange}08`,
+    borderWidth: 1,
+    borderColor: `${C.orange}22`,
+    borderRadius: 8,
+    padding: 14,
+  },
+  pgAddExTitle: {
+    color: C.orange,
+    fontSize: 12,
+    fontFamily: "Inter_700Bold",
+    marginBottom: 10,
+  },
+  pgAddExBtn: {
+    backgroundColor: C.orange,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    paddingVertical: 10,
+    borderRadius: 6,
+  },
+  pgAddExBtnText: {
+    color: C.white,
+    fontSize: 13,
+    fontFamily: "Inter_600SemiBold",
   },
   modal: {
     flex: 1,

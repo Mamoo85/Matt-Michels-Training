@@ -14,7 +14,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useApp } from "@/context/AppContext";
 import C from "@/constants/colors";
 import { ProgressBar } from "@/components/ui/ProgressBar";
-import { DEFAULT_QUOTES, Client, Challenge } from "@/utils/storage";
+import { DEFAULT_QUOTES, Challenge } from "@/utils/storage";
 
 export default function HomeScreen() {
   const { data, isLoading, currentClientId, isTrainer } = useApp();
@@ -71,15 +71,27 @@ export default function HomeScreen() {
           <Text style={styles.navTitle}>M² Training</Text>
           <Text style={styles.navSub}>Real training, real results</Text>
         </View>
-        <Pressable
-          style={styles.loginBtn}
-          onPress={() => {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-            router.push("/login");
-          }}
-        >
-          <Text style={styles.loginBtnText}>Log in</Text>
-        </Pressable>
+        <View style={styles.navRight}>
+          <Pressable
+            style={styles.portalBtn}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              router.push("/login");
+            }}
+          >
+            <Feather name="user" size={14} color={C.white} />
+            <Text style={styles.portalBtnText}>Client Portal</Text>
+          </Pressable>
+          <Pressable
+            style={styles.trainerBtn}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              router.push("/login");
+            }}
+          >
+            <Text style={styles.trainerBtnText}>Trainer</Text>
+          </Pressable>
+        </View>
       </View>
 
       <ScrollView
@@ -100,7 +112,9 @@ export default function HomeScreen() {
             Train smarter.{"\n"}Fix what's broken.{"\n"}Get stronger.
           </Text>
           <Text style={styles.heroSub}>
-            No fluff. No shortcuts. Real training, real results.
+            Two decades of experience. Thousands of clients trained with zero
+            injuries. From middle school athletes to Division I competitors
+            — real training, real results.
           </Text>
           <Pressable
             style={styles.heroBtn}
@@ -114,11 +128,74 @@ export default function HomeScreen() {
           </Pressable>
         </View>
 
+        {/* STATS ROW */}
+        <View style={styles.statsRow}>
+          {[
+            { value: "20+", label: "Years" },
+            { value: "50+", label: "College Athletes" },
+            { value: "1000s", label: "Clients Trained" },
+            { value: "Zero", label: "Injuries" },
+          ].map((s) => (
+            <View key={s.label} style={styles.statCard}>
+              <Text style={styles.statValue}>{s.value}</Text>
+              <Text style={styles.statLabel}>{s.label}</Text>
+            </View>
+          ))}
+        </View>
+
+        {/* CLIENT PORTAL CTA */}
+        <Pressable
+          style={styles.portalCard}
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            router.push("/login");
+          }}
+        >
+          <View style={styles.portalCardLeft}>
+            <Text style={styles.portalCardLabel}>CURRENT CLIENTS</Text>
+            <Text style={styles.portalCardTitle}>Already training with Matt?</Text>
+            <Text style={styles.portalCardBody}>
+              Log a lift  ·  View progress  ·  Book a session  ·  Matt's notes
+            </Text>
+          </View>
+          <View style={styles.portalCardBtn}>
+            <Text style={styles.portalCardBtnText}>Go to your portal</Text>
+            <Feather name="arrow-right" size={14} color={C.white} />
+          </View>
+        </Pressable>
+
         {/* QUOTE */}
         <View style={styles.quoteBanner}>
-          <View style={styles.quoteAccent} />
           <Text style={styles.quoteText}>"{quote}"</Text>
           <Text style={styles.quoteCredit}>— M² Training</Text>
+        </View>
+
+        {/* TEAM & YOUTH PROGRAMS */}
+        <View style={styles.teamCard}>
+          <Text style={styles.teamLabel}>TEAM & YOUTH PROGRAMS</Text>
+          <Text style={styles.teamTitle}>
+            Any team. Any sport. Any age.
+          </Text>
+          <Text style={styles.teamBody}>
+            Custom one-time programs built specifically for your team — from
+            middle school all the way through college. Matt builds the program
+            for your coach to deliver, comes on-site to teach it, or trains
+            the team directly. A day, a week, a month — whatever you need.
+          </Text>
+          <Text style={styles.teamCred}>
+            20+ years developing athletes. 50+ college athletes produced. Zero
+            injuries. Guaranteed results.
+          </Text>
+          <Pressable
+            style={styles.teamBtn}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+              router.push("/teams");
+            }}
+          >
+            <Text style={styles.teamBtnText}>I Can Do That</Text>
+            <Feather name="arrow-right" size={16} color={C.white} />
+          </Pressable>
         </View>
 
         {/* WORDS FROM MATT */}
@@ -237,7 +314,7 @@ export default function HomeScreen() {
         <View style={styles.footer}>
           <Text style={styles.footerText}>M² Training · Real results.</Text>
           <Pressable onPress={() => router.push("/login")}>
-            <Text style={styles.footerLink}>Client login</Text>
+            <Text style={styles.footerLink}>Client Portal</Text>
           </Pressable>
         </View>
       </ScrollView>
@@ -280,16 +357,36 @@ const styles = StyleSheet.create({
     fontFamily: "Inter_400Regular",
     marginTop: 1,
   },
-  loginBtn: {
+  navRight: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  portalBtn: {
     backgroundColor: C.orange,
-    paddingHorizontal: 16,
+    paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 6,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
   },
-  loginBtnText: {
+  portalBtnText: {
     color: C.white,
-    fontSize: 13,
+    fontSize: 12,
     fontFamily: "Inter_600SemiBold",
+  },
+  trainerBtn: {
+    borderWidth: 1,
+    borderColor: C.border,
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+    borderRadius: 6,
+  },
+  trainerBtnText: {
+    color: C.dim,
+    fontSize: 11,
+    fontFamily: "Inter_500Medium",
   },
   scroll: {
     padding: 0,
@@ -338,9 +435,82 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontFamily: "Inter_700Bold",
   },
+  statsRow: {
+    flexDirection: "row",
+    paddingHorizontal: 16,
+    paddingTop: 20,
+    paddingBottom: 6,
+    gap: 8,
+  },
+  statCard: {
+    flex: 1,
+    backgroundColor: C.surface,
+    borderWidth: 1,
+    borderColor: C.border,
+    borderRadius: 8,
+    paddingVertical: 12,
+    alignItems: "center",
+  },
+  statValue: {
+    color: C.orange,
+    fontSize: 16,
+    fontFamily: "Inter_700Bold",
+  },
+  statLabel: {
+    color: C.dim,
+    fontSize: 9,
+    fontFamily: "Inter_500Medium",
+    marginTop: 3,
+    textAlign: "center",
+  },
+  portalCard: {
+    margin: 16,
+    marginBottom: 6,
+    backgroundColor: `${C.orange}12`,
+    borderWidth: 1,
+    borderColor: `${C.orange}44`,
+    borderRadius: 10,
+    padding: 20,
+  },
+  portalCardLeft: {
+    marginBottom: 14,
+  },
+  portalCardLabel: {
+    color: C.orange,
+    fontSize: 10,
+    fontFamily: "Inter_700Bold",
+    letterSpacing: 2,
+    marginBottom: 8,
+  },
+  portalCardTitle: {
+    color: C.text,
+    fontSize: 18,
+    fontFamily: "Inter_700Bold",
+    marginBottom: 6,
+  },
+  portalCardBody: {
+    color: C.dim,
+    fontSize: 13,
+    fontFamily: "Inter_400Regular",
+    lineHeight: 20,
+  },
+  portalCardBtn: {
+    backgroundColor: C.orange,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  portalCardBtnText: {
+    color: C.white,
+    fontSize: 14,
+    fontFamily: "Inter_700Bold",
+  },
   quoteBanner: {
     margin: 16,
-    marginTop: 20,
+    marginTop: 14,
     padding: 20,
     backgroundColor: `${C.orange}10`,
     borderWidth: 1,
@@ -350,9 +520,6 @@ const styles = StyleSheet.create({
     gap: 8,
     borderLeftWidth: 4,
     borderLeftColor: C.orange,
-  },
-  quoteAccent: {
-    display: "none",
   },
   quoteText: {
     color: C.text,
@@ -365,6 +532,56 @@ const styles = StyleSheet.create({
     color: C.orange,
     fontSize: 12,
     fontFamily: "Inter_600SemiBold",
+  },
+  teamCard: {
+    margin: 16,
+    marginTop: 6,
+    backgroundColor: C.surface,
+    borderWidth: 1,
+    borderColor: `${C.green}44`,
+    borderRadius: 10,
+    padding: 20,
+  },
+  teamLabel: {
+    color: C.green,
+    fontSize: 10,
+    fontFamily: "Inter_700Bold",
+    letterSpacing: 2,
+    marginBottom: 8,
+  },
+  teamTitle: {
+    color: C.text,
+    fontSize: 20,
+    fontFamily: "Inter_700Bold",
+    marginBottom: 8,
+  },
+  teamBody: {
+    color: C.dim,
+    fontSize: 14,
+    fontFamily: "Inter_400Regular",
+    lineHeight: 22,
+    marginBottom: 10,
+  },
+  teamCred: {
+    color: C.orange,
+    fontSize: 12,
+    fontFamily: "Inter_600SemiBold",
+    lineHeight: 18,
+    marginBottom: 16,
+  },
+  teamBtn: {
+    backgroundColor: C.orange,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    paddingVertical: 14,
+    borderRadius: 8,
+  },
+  teamBtnText: {
+    color: C.white,
+    fontSize: 16,
+    fontFamily: "Inter_700Bold",
   },
   card: {
     backgroundColor: C.surface,
@@ -505,8 +722,8 @@ const styles = StyleSheet.create({
     fontFamily: "Inter_400Regular",
   },
   footerLink: {
-    color: C.dim,
+    color: C.orange,
     fontSize: 12,
-    fontFamily: "Inter_400Regular",
+    fontFamily: "Inter_600SemiBold",
   },
 });
