@@ -38,6 +38,7 @@ function RootLayoutNav() {
       <Stack.Screen name="online-coaching" options={{ headerShown: false }} />
       <Stack.Screen name="meet-prep" options={{ headerShown: false }} />
       <Stack.Screen name="trainer-mentorship" options={{ headerShown: false }} />
+      <Stack.Screen name="privacy-policy" options={{ headerShown: false }} />
       <Stack.Screen name="(client)" options={{ headerShown: false }} />
       <Stack.Screen name="(trainer)" options={{ headerShown: false }} />
     </Stack>

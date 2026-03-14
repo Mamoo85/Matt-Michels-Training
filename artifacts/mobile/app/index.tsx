@@ -449,6 +449,10 @@ export default function HomeScreen() {
               <Ionicons name="logo-facebook" size={12} color={C.orange} />
               <Text style={styles.footerLink}>Facebook</Text>
             </Pressable>
+            <Text style={styles.footerDot}>·</Text>
+            <Pressable onPress={() => router.push("/privacy-policy")}>
+              <Text style={styles.footerLink}>Privacy Policy</Text>
+            </Pressable>
           </View>
         </View>
       </ScrollView>

@@ -319,6 +319,10 @@ export default function LoginScreen() {
             <Pressable onPress={() => router.back()} style={{ marginTop: 12 }}>
               <Text style={styles.backLink}>Back to home</Text>
             </Pressable>
+
+            <Pressable onPress={() => router.push("/privacy-policy")} style={{ marginTop: 8 }}>
+              <Text style={styles.backLink}>Privacy Policy</Text>
+            </Pressable>
           </View>
         )}
 
