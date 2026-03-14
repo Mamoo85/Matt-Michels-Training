@@ -16,9 +16,10 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useApp } from "@/context/AppContext";
 import C from "@/constants/colors";
 import {
+  DeliveryFrequency,
+  FREQ_LABELS,
   LIFTS,
-  SUBSCRIPTION_PLANS,
-  SubscriptionPlan,
+  SubscriptionInfo,
   fmt,
   fmtS,
   getMonday,
@@ -73,8 +74,16 @@ export default function ClientsScreen() {
   // Coaching tab state
   const [coachingExpanded, setCoachingExpanded] = useState<number | null>(null);
   const [checkInReplyText, setCheckInReplyText] = useState("");
-  const [planModal, setPlanModal] = useState<number | null>(null);
-  const [planSaving, setPlanSaving] = useState(false);
+  const [planModal, setPlanModal] = useState<number | null>(null); // clientId whose package is being built/edited
+  const [pkgDraft, setPkgDraft] = useState({
+    packageName: "",
+    includeWorkouts: false,
+    workoutFrequency: "monthly" as DeliveryFrequency,
+    includeCheckins: false,
+    checkinFrequency: "monthly" as DeliveryFrequency,
+    monthlyPrice: "",
+    notes: "",
+  });
 
   // Program builder
   const [pgTitle, setPgTitle] = useState("");
@@ -719,16 +728,42 @@ export default function ClientsScreen() {
               setCheckInReplyText("");
             };
 
-            const handleSetPlan = (clientId: number, plan: SubscriptionPlan | null) => {
-              if (plan === null) {
-                setClientSubscription(clientId, null);
-              } else {
-                setClientSubscription(clientId, {
-                  plan,
-                  status: "active",
-                  startedAt: nowTs(),
-                });
-              }
+            const openPkgBuilder = (clientId: number) => {
+              const existing = data.clients.find(c => c.id === clientId)?.subscription;
+              setPkgDraft(existing ? {
+                packageName: existing.packageName ?? "",
+                includeWorkouts: !!existing.workoutFrequency,
+                workoutFrequency: existing.workoutFrequency ?? "monthly",
+                includeCheckins: !!existing.checkinFrequency,
+                checkinFrequency: existing.checkinFrequency ?? "monthly",
+                monthlyPrice: String(existing.monthlyPrice ?? ""),
+                notes: existing.notes ?? "",
+              } : {
+                packageName: "",
+                includeWorkouts: false,
+                workoutFrequency: "monthly",
+                includeCheckins: false,
+                checkinFrequency: "monthly",
+                monthlyPrice: "",
+                notes: "",
+              });
+              setPlanModal(clientId);
+            };
+
+            const savePkg = () => {
+              if (planModal === null) return;
+              const price = parseFloat(pkgDraft.monthlyPrice);
+              if (isNaN(price) || price < 0) return;
+              const info: SubscriptionInfo = {
+                status: "active",
+                startedAt: data.clients.find(c => c.id === planModal)?.subscription?.startedAt ?? nowTs(),
+                packageName: pkgDraft.packageName.trim() || "Custom Coaching Package",
+                workoutFrequency: pkgDraft.includeWorkouts ? pkgDraft.workoutFrequency : null,
+                checkinFrequency: pkgDraft.includeCheckins ? pkgDraft.checkinFrequency : null,
+                monthlyPrice: price,
+                notes: pkgDraft.notes.trim() || undefined,
+              };
+              setClientSubscription(planModal, info);
               Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
               setPlanModal(null);
             };
@@ -748,7 +783,6 @@ export default function ClientsScreen() {
                     <Text style={styles.inqSectionLabel}>ONLINE COACHING CLIENTS</Text>
                     {coachingClients.map((client) => {
                       const sub = client.subscription!;
-                      const planInfo = SUBSCRIPTION_PLANS[sub.plan];
                       const thisWeekCheckIn = (data.weeklyCheckIns || []).find(
                         ci => ci.clientId === client.id && ci.weekOf === thisMonday
                       );
@@ -772,9 +806,9 @@ export default function ClientsScreen() {
                             <View style={styles.coachHeaderLeft}>
                               <Text style={styles.coachName}>{client.name}</Text>
                               <View style={styles.coachMeta}>
-                                <View style={[styles.coachPlanBadge, { backgroundColor: `${planInfo.color}22`, borderColor: `${planInfo.color}55` }]}>
-                                  <Text style={[styles.coachPlanText, { color: planInfo.color }]}>
-                                    {planInfo.label} · ${planInfo.price}/mo
+                                <View style={styles.coachPlanBadge}>
+                                  <Text style={styles.coachPlanText}>
+                                    {sub.packageName || "Custom Package"} · ${sub.monthlyPrice}/mo
                                   </Text>
                                 </View>
                                 <View style={[
@@ -916,32 +950,42 @@ export default function ClientsScreen() {
                               )}
 
                               {/* SUBSCRIPTION MANAGEMENT */}
-                              <Text style={[styles.coachSectionLabel, { marginTop: 14 }]}>SUBSCRIPTION</Text>
-                              <View style={styles.coachSubRow}>
-                                {(["standard", "full", "elite"] as SubscriptionPlan[]).map((p) => {
-                                  const pi = SUBSCRIPTION_PLANS[p];
-                                  const isActive = sub.plan === p;
-                                  return (
-                                    <Pressable
-                                      key={p}
-                                      style={[
-                                        styles.coachSubPill,
-                                        isActive && { backgroundColor: `${pi.color}22`, borderColor: `${pi.color}66` },
-                                      ]}
-                                      onPress={() => {
-                                        handleSetPlan(client.id, p);
-                                      }}
-                                    >
-                                      <Text style={[styles.coachSubPillText, isActive && { color: pi.color }]}>
-                                        {pi.label}
-                                      </Text>
-                                      <Text style={[styles.coachSubPillPrice, isActive && { color: pi.color }]}>
-                                        ${pi.price}
-                                      </Text>
-                                    </Pressable>
-                                  );
-                                })}
+                              <Text style={[styles.coachSectionLabel, { marginTop: 14 }]}>PACKAGE</Text>
+                              <View style={styles.coachPkgCard}>
+                                <View style={styles.coachPkgRow}>
+                                  <Text style={styles.coachPkgLabel}>Name</Text>
+                                  <Text style={styles.coachPkgVal}>{sub.packageName || "Custom Package"}</Text>
+                                </View>
+                                <View style={styles.coachPkgRow}>
+                                  <Text style={styles.coachPkgLabel}>Price</Text>
+                                  <Text style={[styles.coachPkgVal, { color: C.orange }]}>${sub.monthlyPrice}/mo</Text>
+                                </View>
+                                <View style={styles.coachPkgRow}>
+                                  <Text style={styles.coachPkgLabel}>Workouts</Text>
+                                  <Text style={styles.coachPkgVal}>
+                                    {sub.workoutFrequency ? FREQ_LABELS[sub.workoutFrequency] : "Not included"}
+                                  </Text>
+                                </View>
+                                <View style={styles.coachPkgRow}>
+                                  <Text style={styles.coachPkgLabel}>In-Person</Text>
+                                  <Text style={styles.coachPkgVal}>
+                                    {sub.checkinFrequency ? FREQ_LABELS[sub.checkinFrequency] : "Not included"}
+                                  </Text>
+                                </View>
+                                {!!sub.notes && (
+                                  <View style={[styles.coachPkgRow, { alignItems: "flex-start" }]}>
+                                    <Text style={styles.coachPkgLabel}>Notes</Text>
+                                    <Text style={[styles.coachPkgVal, { flex: 1 }]}>{sub.notes}</Text>
+                                  </View>
+                                )}
                               </View>
+                              <Pressable
+                                style={styles.coachEditPkgBtn}
+                                onPress={() => openPkgBuilder(client.id)}
+                              >
+                                <Feather name="edit-2" size={13} color={C.orange} />
+                                <Text style={styles.coachEditPkgText}>Edit Package</Text>
+                              </Pressable>
                               <View style={styles.coachSubActions}>
                                 <Pressable
                                   style={[
@@ -963,10 +1007,11 @@ export default function ClientsScreen() {
                                 <Pressable
                                   style={styles.coachSubRemoveBtn}
                                   onPress={() => {
-                                    handleSetPlan(client.id, null);
+                                    setClientSubscription(client.id, null);
+                                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
                                   }}
                                 >
-                                  <Text style={styles.coachSubRemoveText}>Remove plan</Text>
+                                  <Text style={styles.coachSubRemoveText}>Remove subscription</Text>
                                 </Pressable>
                               </View>
 
@@ -991,38 +1036,22 @@ export default function ClientsScreen() {
                     {/* ALL CLIENTS WITHOUT A PLAN */}
                     {data.clients.filter(c => !c.subscription).length > 0 && (
                       <>
-                        <Text style={[styles.inqSectionLabel, { marginTop: 16 }]}>ASSIGN A PLAN</Text>
+                        <Text style={[styles.inqSectionLabel, { marginTop: 16 }]}>ASSIGN A SUBSCRIPTION</Text>
                         {data.clients.filter(c => !c.subscription).map((client) => (
                           <View key={client.id} style={styles.coachNoPlanCard}>
-                            <View>
+                            <View style={{ flex: 1 }}>
                               <Text style={styles.coachNoPlanName}>{client.name}</Text>
                               {!!client.email && (
                                 <Text style={styles.coachNoPlanEmail}>{client.email}</Text>
                               )}
                             </View>
-                            <View style={styles.coachNoPlanActions}>
-                              {(["standard", "full", "elite"] as SubscriptionPlan[]).map((p) => {
-                                const pi = SUBSCRIPTION_PLANS[p];
-                                return (
-                                  <Pressable
-                                    key={p}
-                                    style={[styles.coachNoPlanBtn, { borderColor: `${pi.color}55` }]}
-                                    onPress={() => {
-                                      setClientSubscription(client.id, {
-                                        plan: p,
-                                        status: "active",
-                                        startedAt: nowTs(),
-                                      });
-                                      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-                                    }}
-                                  >
-                                    <Text style={[styles.coachNoPlanBtnText, { color: pi.color }]}>
-                                      {pi.label}
-                                    </Text>
-                                  </Pressable>
-                                );
-                              })}
-                            </View>
+                            <Pressable
+                              style={styles.coachConfigureBtn}
+                              onPress={() => openPkgBuilder(client.id)}
+                            >
+                              <Feather name="plus" size={13} color="#fff" />
+                              <Text style={styles.coachConfigureBtnText}>Configure</Text>
+                            </Pressable>
                           </View>
                         ))}
                       </>
@@ -1869,6 +1898,147 @@ export default function ClientsScreen() {
               <Text style={styles.logBtnText}>Send Reply</Text>
             </Pressable>
           </View>
+        </View>
+      </Modal>
+
+      {/* PACKAGE BUILDER MODAL */}
+      <Modal
+        visible={planModal !== null}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setPlanModal(null)}
+      >
+        <View style={styles.modal}>
+          <View style={styles.modalHeader}>
+            <Pressable onPress={() => setPlanModal(null)}>
+              <Feather name="x" size={22} color={C.dim} />
+            </Pressable>
+            <Text style={styles.modalTitle}>
+              {data.clients.find(c => c.id === planModal)?.subscription
+                ? "Edit Package"
+                : "Configure Package"}
+            </Text>
+            <View style={{ width: 22 }} />
+          </View>
+
+          <ScrollView style={styles.modalBody} showsVerticalScrollIndicator={false}>
+            {/* PACKAGE NAME */}
+            <Text style={styles.pkgBuilderLabel}>PACKAGE NAME</Text>
+            <TextInput
+              style={styles.pkgBuilderInput}
+              value={pkgDraft.packageName}
+              onChangeText={(v) => setPkgDraft(d => ({ ...d, packageName: v }))}
+              placeholder="e.g. Competition Prep, Online Strength..."
+              placeholderTextColor={C.muted}
+            />
+
+            {/* WORKOUT PROGRAMS */}
+            <View style={styles.pkgToggleRow}>
+              <View>
+                <Text style={styles.pkgBuilderSectionTitle}>Workout Programs</Text>
+                <Text style={styles.pkgBuilderSectionSub}>Custom programs delivered on a schedule</Text>
+              </View>
+              <Pressable
+                style={[styles.pkgToggle, pkgDraft.includeWorkouts && styles.pkgToggleOn]}
+                onPress={() => {
+                  setPkgDraft(d => ({ ...d, includeWorkouts: !d.includeWorkouts }));
+                  Haptics.selectionAsync();
+                }}
+              >
+                <View style={[styles.pkgToggleThumb, pkgDraft.includeWorkouts && styles.pkgToggleThumbOn]} />
+              </Pressable>
+            </View>
+            {pkgDraft.includeWorkouts && (
+              <View style={styles.pkgFreqRow}>
+                {(["weekly", "biweekly", "monthly", "bimonthly"] as DeliveryFrequency[]).map((f) => (
+                  <Pressable
+                    key={f}
+                    style={[styles.pkgFreqChip, pkgDraft.workoutFrequency === f && styles.pkgFreqChipActive]}
+                    onPress={() => {
+                      setPkgDraft(d => ({ ...d, workoutFrequency: f }));
+                      Haptics.selectionAsync();
+                    }}
+                  >
+                    <Text style={[styles.pkgFreqChipText, pkgDraft.workoutFrequency === f && styles.pkgFreqChipTextActive]}>
+                      {FREQ_LABELS[f]}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+            )}
+
+            {/* IN-PERSON CHECK-INS */}
+            <View style={[styles.pkgToggleRow, { marginTop: 16 }]}>
+              <View>
+                <Text style={styles.pkgBuilderSectionTitle}>In-Person Check-Ins</Text>
+                <Text style={styles.pkgBuilderSectionSub}>Scheduled sessions at the studio</Text>
+              </View>
+              <Pressable
+                style={[styles.pkgToggle, pkgDraft.includeCheckins && styles.pkgToggleOn]}
+                onPress={() => {
+                  setPkgDraft(d => ({ ...d, includeCheckins: !d.includeCheckins }));
+                  Haptics.selectionAsync();
+                }}
+              >
+                <View style={[styles.pkgToggleThumb, pkgDraft.includeCheckins && styles.pkgToggleThumbOn]} />
+              </Pressable>
+            </View>
+            {pkgDraft.includeCheckins && (
+              <View style={styles.pkgFreqRow}>
+                {(["weekly", "biweekly", "monthly", "bimonthly"] as DeliveryFrequency[]).map((f) => (
+                  <Pressable
+                    key={f}
+                    style={[styles.pkgFreqChip, pkgDraft.checkinFrequency === f && styles.pkgFreqChipActive]}
+                    onPress={() => {
+                      setPkgDraft(d => ({ ...d, checkinFrequency: f }));
+                      Haptics.selectionAsync();
+                    }}
+                  >
+                    <Text style={[styles.pkgFreqChipText, pkgDraft.checkinFrequency === f && styles.pkgFreqChipTextActive]}>
+                      {FREQ_LABELS[f]}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+            )}
+
+            {/* MONTHLY PRICE */}
+            <Text style={[styles.pkgBuilderLabel, { marginTop: 20 }]}>MONTHLY PRICE ($)</Text>
+            <TextInput
+              style={styles.pkgBuilderInput}
+              value={pkgDraft.monthlyPrice}
+              onChangeText={(v) => setPkgDraft(d => ({ ...d, monthlyPrice: v.replace(/[^0-9.]/g, "") }))}
+              placeholder="e.g. 150"
+              placeholderTextColor={C.muted}
+              keyboardType="decimal-pad"
+            />
+
+            {/* NOTES */}
+            <Text style={[styles.pkgBuilderLabel, { marginTop: 16 }]}>NOTES (OPTIONAL)</Text>
+            <TextInput
+              style={[styles.pkgBuilderInput, { minHeight: 80, textAlignVertical: "top" }]}
+              value={pkgDraft.notes}
+              onChangeText={(v) => setPkgDraft(d => ({ ...d, notes: v }))}
+              placeholder="Any additional details about this package..."
+              placeholderTextColor={C.muted}
+              multiline
+            />
+
+            {/* SAVE */}
+            <Pressable
+              style={[
+                styles.pkgSaveBtn,
+                (!pkgDraft.monthlyPrice.trim() || isNaN(parseFloat(pkgDraft.monthlyPrice))) && { opacity: 0.4 },
+              ]}
+              disabled={!pkgDraft.monthlyPrice.trim() || isNaN(parseFloat(pkgDraft.monthlyPrice))}
+              onPress={savePkg}
+            >
+              <Text style={styles.pkgSaveBtnText}>
+                {data.clients.find(c => c.id === planModal)?.subscription ? "Save Changes" : "Assign Package"}
+              </Text>
+            </Pressable>
+            <View style={{ height: 40 }} />
+          </ScrollView>
         </View>
       </Modal>
     </View>
@@ -2913,6 +3083,8 @@ const styles = StyleSheet.create({
   },
   coachPlanBadge: {
     borderWidth: 1,
+    borderColor: `${C.orange}44`,
+    backgroundColor: `${C.orange}11`,
     borderRadius: 5,
     paddingHorizontal: 7,
     paddingVertical: 2,
@@ -2920,6 +3092,7 @@ const styles = StyleSheet.create({
   coachPlanText: {
     fontSize: 12,
     fontFamily: "Inter_700Bold",
+    color: C.orange,
   },
   coachStatusDot: {
     width: 6,
@@ -3201,6 +3374,160 @@ const styles = StyleSheet.create({
   },
   coachNoPlanBtnText: {
     fontSize: 12,
+    fontFamily: "Inter_700Bold",
+  },
+  coachConfigureBtn: {
+    backgroundColor: C.orange,
+    borderRadius: 8,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  coachConfigureBtnText: {
+    color: "#fff",
+    fontSize: 13,
+    fontFamily: "Inter_600SemiBold",
+  },
+  coachPkgCard: {
+    backgroundColor: C.bg,
+    borderWidth: 1,
+    borderColor: C.border,
+    borderRadius: 8,
+    padding: 10,
+    marginBottom: 8,
+    gap: 8,
+  },
+  coachPkgRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  coachPkgLabel: {
+    color: C.dim,
+    fontSize: 12,
+    fontFamily: "Inter_600SemiBold",
+    width: 80,
+  },
+  coachPkgVal: {
+    color: C.text,
+    fontSize: 13,
+    fontFamily: "Inter_400Regular",
+    flex: 1,
+    textAlign: "right",
+  },
+  coachEditPkgBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    borderWidth: 1,
+    borderColor: `${C.orange}55`,
+    backgroundColor: `${C.orange}11`,
+    borderRadius: 7,
+    paddingVertical: 8,
+    justifyContent: "center",
+    marginBottom: 10,
+  },
+  coachEditPkgText: {
+    color: C.orange,
+    fontSize: 13,
+    fontFamily: "Inter_600SemiBold",
+  },
+  pkgBuilderLabel: {
+    color: C.dim,
+    fontSize: 11,
+    fontFamily: "Inter_700Bold",
+    letterSpacing: 1.2,
+    marginBottom: 6,
+    marginTop: 6,
+  },
+  pkgBuilderInput: {
+    backgroundColor: C.surface,
+    borderWidth: 1,
+    borderColor: C.border,
+    borderRadius: 8,
+    padding: 11,
+    color: C.text,
+    fontSize: 14,
+    fontFamily: "Inter_400Regular",
+    marginBottom: 8,
+  },
+  pkgBuilderSectionTitle: {
+    color: C.text,
+    fontSize: 15,
+    fontFamily: "Inter_600SemiBold",
+    marginBottom: 2,
+  },
+  pkgBuilderSectionSub: {
+    color: C.dim,
+    fontSize: 12,
+    fontFamily: "Inter_400Regular",
+  },
+  pkgToggleRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: C.border,
+  },
+  pkgToggle: {
+    width: 46,
+    height: 26,
+    borderRadius: 13,
+    backgroundColor: C.border,
+    justifyContent: "center",
+    paddingHorizontal: 3,
+  },
+  pkgToggleOn: {
+    backgroundColor: C.orange,
+  },
+  pkgToggleThumb: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: "#fff",
+  },
+  pkgToggleThumbOn: {
+    alignSelf: "flex-end",
+  },
+  pkgFreqRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 7,
+    paddingTop: 10,
+    paddingBottom: 4,
+  },
+  pkgFreqChip: {
+    borderWidth: 1,
+    borderColor: C.border,
+    borderRadius: 20,
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+  },
+  pkgFreqChipActive: {
+    backgroundColor: `${C.orange}22`,
+    borderColor: `${C.orange}88`,
+  },
+  pkgFreqChipText: {
+    color: C.dim,
+    fontSize: 13,
+    fontFamily: "Inter_600SemiBold",
+  },
+  pkgFreqChipTextActive: {
+    color: C.orange,
+  },
+  pkgSaveBtn: {
+    backgroundColor: C.orange,
+    borderRadius: 10,
+    paddingVertical: 14,
+    alignItems: "center",
+    marginTop: 24,
+  },
+  pkgSaveBtnText: {
+    color: "#fff",
+    fontSize: 15,
     fontFamily: "Inter_700Bold",
   },
 });

@@ -14,7 +14,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useApp } from "@/context/AppContext";
 import C from "@/constants/colors";
-import { LIFTS, SUBSCRIPTION_PLANS, fmtS, fmt, getMonday } from "@/utils/storage";
+import { FREQ_LABELS, LIFTS, fmtS, fmt, getMonday } from "@/utils/storage";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { LiftChart } from "@/components/LiftChart";
 
@@ -31,7 +31,6 @@ export default function ClientProgressScreen() {
     (c) => c.clientId === currentClientId && c.weekOf === thisMonday
   );
   const sub = client.subscription;
-  const planInfo = sub ? SUBSCRIPTION_PLANS[sub.plan] : null;
 
   const sessions = [...new Set((client.entries || []).map((e) => e.date))].length;
   const PRs: Record<string, number | null> = {};
@@ -91,27 +90,34 @@ export default function ClientProgressScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* SUBSCRIPTION PLAN CARD */}
-        {!!planInfo && sub && (
-          <View
-            style={[
-              styles.planCard,
-              { borderColor: `${planInfo.color}55` },
-            ]}
-          >
+        {!!sub && (
+          <View style={styles.planCard}>
             <View style={styles.planRow}>
-              <View
-                style={[
-                  styles.planBadge,
-                  { backgroundColor: `${planInfo.color}22`, borderColor: `${planInfo.color}55` },
-                ]}
-              >
-                <Text style={[styles.planBadgeText, { color: planInfo.color }]}>
-                  {planInfo.label}
+              <View style={styles.planBadge}>
+                <Text style={styles.planBadgeText}>
+                  {sub.packageName || "Coaching Package"}
                 </Text>
               </View>
-              <Text style={styles.planPrice}>${planInfo.price}/mo</Text>
+              <Text style={styles.planPrice}>${sub.monthlyPrice}/mo</Text>
             </View>
-            <Text style={styles.planTagline}>{planInfo.tagline}</Text>
+            <View style={styles.planFeatureRow}>
+              <View style={styles.planFeature}>
+                <Text style={styles.planFeatureLabel}>Workouts</Text>
+                <Text style={styles.planFeatureVal}>
+                  {sub.workoutFrequency ? FREQ_LABELS[sub.workoutFrequency] : "—"}
+                </Text>
+              </View>
+              <View style={styles.planFeatureDivider} />
+              <View style={styles.planFeature}>
+                <Text style={styles.planFeatureLabel}>In-Person</Text>
+                <Text style={styles.planFeatureVal}>
+                  {sub.checkinFrequency ? FREQ_LABELS[sub.checkinFrequency] : "—"}
+                </Text>
+              </View>
+            </View>
+            {!!sub.notes && (
+              <Text style={styles.planNotes}>{sub.notes}</Text>
+            )}
             <Text style={styles.planStatus}>
               {sub.status === "active"
                 ? "Your coaching plan is active"
@@ -455,6 +461,7 @@ const styles = StyleSheet.create({
   planCard: {
     backgroundColor: C.surface,
     borderWidth: 1,
+    borderColor: `${C.orange}44`,
     borderRadius: 10,
     padding: 14,
     marginBottom: 12,
@@ -463,10 +470,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 6,
+    marginBottom: 10,
   },
   planBadge: {
     borderWidth: 1,
+    borderColor: `${C.orange}55`,
+    backgroundColor: `${C.orange}11`,
     borderRadius: 6,
     paddingHorizontal: 10,
     paddingVertical: 4,
@@ -474,17 +483,48 @@ const styles = StyleSheet.create({
   planBadgeText: {
     fontSize: 13,
     fontFamily: "Inter_700Bold",
+    color: C.orange,
   },
   planPrice: {
     color: C.text,
     fontSize: 16,
     fontFamily: "Inter_700Bold",
   },
-  planTagline: {
+  planFeatureRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: C.bg,
+    borderRadius: 7,
+    padding: 10,
+    marginBottom: 10,
+  },
+  planFeature: {
+    flex: 1,
+    alignItems: "center",
+  },
+  planFeatureDivider: {
+    width: 1,
+    height: 28,
+    backgroundColor: C.border,
+  },
+  planFeatureLabel: {
     color: C.dim,
+    fontSize: 11,
+    fontFamily: "Inter_600SemiBold",
+    letterSpacing: 0.5,
+    marginBottom: 3,
+  },
+  planFeatureVal: {
+    color: C.text,
     fontSize: 13,
+    fontFamily: "Inter_700Bold",
+  },
+  planNotes: {
+    color: C.dim,
+    fontSize: 12,
     fontFamily: "Inter_400Regular",
-    marginBottom: 4,
+    lineHeight: 18,
+    marginBottom: 8,
   },
   planStatus: {
     color: C.green,

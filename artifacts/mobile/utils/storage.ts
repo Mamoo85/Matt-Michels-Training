@@ -30,58 +30,24 @@ export interface ChallengeLog {
   timestamp: string;
 }
 
-export type SubscriptionPlan = "standard" | "full" | "elite";
+export type DeliveryFrequency = "weekly" | "biweekly" | "monthly" | "bimonthly";
+
+export const FREQ_LABELS: Record<DeliveryFrequency, string> = {
+  weekly: "Weekly",
+  biweekly: "Bi-Weekly",
+  monthly: "Monthly",
+  bimonthly: "Bi-Monthly",
+};
 
 export interface SubscriptionInfo {
-  plan: SubscriptionPlan;
   status: "active" | "paused" | "cancelled";
   startedAt: string;
+  packageName: string;
+  workoutFrequency: DeliveryFrequency | null;
+  checkinFrequency: DeliveryFrequency | null;
+  monthlyPrice: number;
   notes?: string;
 }
-
-export const SUBSCRIPTION_PLANS: Record<
-  SubscriptionPlan,
-  { label: string; price: number; color: string; tagline: string; includes: string[] }
-> = {
-  standard: {
-    label: "Standard",
-    price: 100,
-    color: "#4a9eff",
-    tagline: "The foundation",
-    includes: [
-      "Custom monthly training program",
-      "Weekly check-in review from Matt",
-      "Technique feedback via message",
-      "Progress & PR tracking",
-    ],
-  },
-  full: {
-    label: "Full",
-    price: 150,
-    color: "#9b59b6",
-    tagline: "The complete package",
-    includes: [
-      "Everything in Standard",
-      "Bi-weekly program updates",
-      "Nutrition guidance",
-      "Priority same-day response",
-      "Monthly video check-in call",
-    ],
-  },
-  elite: {
-    label: "Elite",
-    price: 200,
-    color: "#e8621a",
-    tagline: "All-access coaching",
-    includes: [
-      "Everything in Full",
-      "Daily text access to Matt",
-      "Real-time program adjustments",
-      "Meet prep included",
-      "On-call anytime access",
-    ],
-  },
-};
 
 export interface WeeklyCheckIn {
   id: string;
