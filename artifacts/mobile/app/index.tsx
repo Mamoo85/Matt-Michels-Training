@@ -1,4 +1,4 @@
-import { Feather } from "@expo/vector-icons";
+import { Feather, Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -420,6 +420,18 @@ export default function HomeScreen() {
             <Feather name="map-pin" size={14} color={C.white} />
             <Text style={styles.mapsBtnText}>Get Directions</Text>
           </Pressable>
+          <View style={styles.findUsSocial}>
+            <Pressable
+              style={styles.fbBtn}
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                Linking.openURL(BUSINESS.facebookUrl).catch(() => {});
+              }}
+            >
+              <Ionicons name="logo-facebook" size={15} color={C.white} />
+              <Text style={styles.fbBtnText}>Follow on Facebook</Text>
+            </Pressable>
+          </View>
           <Pressable
             onPress={() =>
               Linking.openURL(`mailto:${BUSINESS.email}`).catch(() => {})
@@ -464,6 +476,16 @@ export default function HomeScreen() {
               }
             >
               <Text style={styles.footerLink}>Directions</Text>
+            </Pressable>
+            <Text style={styles.footerDot}>·</Text>
+            <Pressable
+              onPress={() =>
+                Linking.openURL(BUSINESS.facebookUrl).catch(() => {})
+              }
+              style={{ flexDirection: "row", alignItems: "center", gap: 4 }}
+            >
+              <Ionicons name="logo-facebook" size={12} color={C.orange} />
+              <Text style={styles.footerLink}>Facebook</Text>
             </Pressable>
           </View>
         </View>
@@ -1079,6 +1101,24 @@ const styles = StyleSheet.create({
   mapsBtnText: {
     color: C.white,
     fontSize: 14,
+    fontFamily: "Inter_600SemiBold",
+  },
+  findUsSocial: {
+    flexDirection: "row",
+    gap: 8,
+  },
+  fbBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 7,
+    backgroundColor: "#1877F2",
+    paddingHorizontal: 18,
+    paddingVertical: 9,
+    borderRadius: 8,
+  },
+  fbBtnText: {
+    color: C.white,
+    fontSize: 13,
     fontFamily: "Inter_600SemiBold",
   },
   findUsEmail: {

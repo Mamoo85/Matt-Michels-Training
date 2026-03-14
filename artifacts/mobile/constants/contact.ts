@@ -7,4 +7,6 @@ export const BUSINESS = {
   mapsUrl:
     "https://maps.google.com/?q=15121+Kercheval+Ave,+Grosse+Pointe+Park,+MI+48230",
   mapsLabel: "15121 Kercheval Ave, Grosse Pointe Park, MI 48230",
+  facebookUrl: "https://www.facebook.com/matt-michels-training",
+  facebookHandle: "Matt Michels Training",
 } as const;
