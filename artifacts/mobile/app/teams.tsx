@@ -155,7 +155,7 @@ export default function TeamsScreen() {
             style={styles.ctaBtn}
             onPress={() => {
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-              router.push("/help");
+              router.push("/team-inquiry");
             }}
           >
             <Text style={styles.ctaBtnText}>Get in touch</Text>
