@@ -54,19 +54,19 @@ export function AnimatedSplash({ onFinished }: Props) {
   const exitSc = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
-    const up = { tension: 80, friction: 9, useNativeDriver: ND };
-    const drop = { tension: 90, friction: 6, useNativeDriver: ND };
+    const up = { tension: 160, friction: 9, useNativeDriver: ND };
+    const drop = { tension: 180, friction: 6, useNativeDriver: ND };
 
     Animated.sequence([
       // Phase 1: Left + right pillars rise (staggered), crossbar drops after
       Animated.parallel([
         Animated.spring(pY0, { toValue: 0, ...up }),
         Animated.sequence([
-          Animated.delay(80),
+          Animated.delay(40),
           Animated.spring(pY1, { toValue: 0, ...up }),
         ]),
         Animated.sequence([
-          Animated.delay(290),
+          Animated.delay(145),
           Animated.spring(barY, { toValue: 0, ...drop }),
         ]),
       ]),
@@ -76,7 +76,7 @@ export function AnimatedSplash({ onFinished }: Props) {
         Animated.sequence([
           Animated.timing(barScaleY, {
             toValue: 1.14,
-            duration: 40,
+            duration: 20,
             useNativeDriver: ND,
           }),
           Animated.spring(barScaleY, {
@@ -89,33 +89,33 @@ export function AnimatedSplash({ onFinished }: Props) {
         Animated.sequence([
           Animated.timing(flashOp, {
             toValue: 0.65,
-            duration: 35,
+            duration: 18,
             useNativeDriver: ND,
           }),
           Animated.timing(flashOp, {
             toValue: 0,
-            duration: 120,
+            duration: 60,
             useNativeDriver: ND,
           }),
         ]),
       ]),
 
-      // Phase 3: "2" superscript + "TRAINING" appear
+      // Phase 3: "2" superscript + "training" appear
       Animated.parallel([
         Animated.spring(supSc, {
           toValue: 1,
-          tension: 100,
+          tension: 200,
           friction: 7,
           useNativeDriver: ND,
         }),
         Animated.timing(supOp, {
           toValue: 1,
-          duration: 150,
+          duration: 75,
           useNativeDriver: ND,
         }),
         Animated.timing(tagOp, {
           toValue: 1,
-          duration: 200,
+          duration: 100,
           useNativeDriver: ND,
         }),
       ]),
@@ -124,38 +124,38 @@ export function AnimatedSplash({ onFinished }: Props) {
       Animated.parallel([
         Animated.timing(blocksOp, {
           toValue: 0,
-          duration: 180,
+          duration: 90,
           useNativeDriver: ND,
         }),
         Animated.timing(logoOp, {
           toValue: 1,
-          duration: 180,
+          duration: 90,
           useNativeDriver: ND,
         }),
         Animated.timing(glowOp, {
           toValue: 0.5,
-          duration: 180,
+          duration: 90,
           useNativeDriver: ND,
         }),
       ]),
 
-      Animated.delay(200),
+      Animated.delay(100),
 
       // Phase 5: Zoom-out exit
       Animated.parallel([
         Animated.timing(exitOp, {
           toValue: 0,
-          duration: 260,
+          duration: 130,
           useNativeDriver: ND,
         }),
         Animated.timing(exitSc, {
           toValue: 1.1,
-          duration: 260,
+          duration: 130,
           useNativeDriver: ND,
         }),
         Animated.timing(glowOp, {
           toValue: 0,
-          duration: 200,
+          duration: 100,
           useNativeDriver: ND,
         }),
       ]),
