@@ -49,6 +49,156 @@ export interface SubscriptionInfo {
   notes?: string;
 }
 
+export interface SubscriptionTemplate {
+  name: string;
+  packageName: string;
+  includeWorkouts: boolean;
+  workoutFrequency: DeliveryFrequency;
+  includeCheckins: boolean;
+  checkinFrequency: DeliveryFrequency;
+  monthlyPrice: number;
+  tagline: string;
+  group: "Online Programs" | "In-Person Check-Ins" | "Combined";
+}
+
+export const SUBSCRIPTION_TEMPLATES: SubscriptionTemplate[] = [
+  // Online Programs
+  {
+    name: "Online — Weekly",
+    packageName: "Weekly Online Coaching",
+    includeWorkouts: true,
+    workoutFrequency: "weekly",
+    includeCheckins: false,
+    checkinFrequency: "monthly",
+    monthlyPrice: 150,
+    tagline: "New program every week",
+    group: "Online Programs",
+  },
+  {
+    name: "Online — Bi-Weekly",
+    packageName: "Bi-Weekly Online Coaching",
+    includeWorkouts: true,
+    workoutFrequency: "biweekly",
+    includeCheckins: false,
+    checkinFrequency: "monthly",
+    monthlyPrice: 125,
+    tagline: "Fresh program every 2 weeks",
+    group: "Online Programs",
+  },
+  {
+    name: "Online — Monthly",
+    packageName: "Monthly Online Coaching",
+    includeWorkouts: true,
+    workoutFrequency: "monthly",
+    includeCheckins: false,
+    checkinFrequency: "monthly",
+    monthlyPrice: 100,
+    tagline: "Monthly program block",
+    group: "Online Programs",
+  },
+  {
+    name: "Online — Bi-Monthly",
+    packageName: "Bi-Monthly Online Coaching",
+    includeWorkouts: true,
+    workoutFrequency: "bimonthly",
+    includeCheckins: false,
+    checkinFrequency: "monthly",
+    monthlyPrice: 75,
+    tagline: "Program every 2 months",
+    group: "Online Programs",
+  },
+  // In-Person Check-Ins
+  {
+    name: "In-Person — Weekly",
+    packageName: "Weekly In-Person Training",
+    includeWorkouts: false,
+    workoutFrequency: "weekly",
+    includeCheckins: true,
+    checkinFrequency: "weekly",
+    monthlyPrice: 200,
+    tagline: "Weekly studio sessions",
+    group: "In-Person Check-Ins",
+  },
+  {
+    name: "In-Person — Bi-Weekly",
+    packageName: "Bi-Weekly In-Person Training",
+    includeWorkouts: false,
+    workoutFrequency: "monthly",
+    includeCheckins: true,
+    checkinFrequency: "biweekly",
+    monthlyPrice: 150,
+    tagline: "Every-other-week studio sessions",
+    group: "In-Person Check-Ins",
+  },
+  {
+    name: "In-Person — Monthly",
+    packageName: "Monthly In-Person Check-In",
+    includeWorkouts: false,
+    workoutFrequency: "monthly",
+    includeCheckins: true,
+    checkinFrequency: "monthly",
+    monthlyPrice: 125,
+    tagline: "Monthly studio check-in",
+    group: "In-Person Check-Ins",
+  },
+  {
+    name: "In-Person — Bi-Monthly",
+    packageName: "Bi-Monthly Check-In",
+    includeWorkouts: false,
+    workoutFrequency: "monthly",
+    includeCheckins: true,
+    checkinFrequency: "bimonthly",
+    monthlyPrice: 100,
+    tagline: "Check-in every 2 months",
+    group: "In-Person Check-Ins",
+  },
+  // Combined
+  {
+    name: "Full Service — Weekly",
+    packageName: "Full Weekly Coaching",
+    includeWorkouts: true,
+    workoutFrequency: "weekly",
+    includeCheckins: true,
+    checkinFrequency: "weekly",
+    monthlyPrice: 250,
+    tagline: "Weekly programs + weekly sessions",
+    group: "Combined",
+  },
+  {
+    name: "Full Service — Bi-Weekly",
+    packageName: "Full Bi-Weekly Coaching",
+    includeWorkouts: true,
+    workoutFrequency: "biweekly",
+    includeCheckins: true,
+    checkinFrequency: "biweekly",
+    monthlyPrice: 200,
+    tagline: "Bi-weekly programs + sessions",
+    group: "Combined",
+  },
+  {
+    name: "Full Service — Monthly",
+    packageName: "Full Monthly Coaching",
+    includeWorkouts: true,
+    workoutFrequency: "monthly",
+    includeCheckins: true,
+    checkinFrequency: "monthly",
+    monthlyPrice: 175,
+    tagline: "Monthly program + studio check-in",
+    group: "Combined",
+  },
+  {
+    name: "Full Service — Bi-Monthly",
+    packageName: "Full Bi-Monthly Coaching",
+    includeWorkouts: true,
+    workoutFrequency: "bimonthly",
+    includeCheckins: true,
+    checkinFrequency: "bimonthly",
+    monthlyPrice: 150,
+    tagline: "Bi-monthly program + session",
+    group: "Combined",
+  },
+];
+
 export interface WeeklyCheckIn {
   id: string;
   clientId: number;

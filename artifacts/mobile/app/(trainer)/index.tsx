@@ -19,6 +19,7 @@ import {
   DeliveryFrequency,
   FREQ_LABELS,
   LIFTS,
+  SUBSCRIPTION_TEMPLATES,
   SubscriptionInfo,
   fmt,
   fmtS,
@@ -75,6 +76,7 @@ export default function ClientsScreen() {
   const [coachingExpanded, setCoachingExpanded] = useState<number | null>(null);
   const [checkInReplyText, setCheckInReplyText] = useState("");
   const [planModal, setPlanModal] = useState<number | null>(null); // clientId whose package is being built/edited
+  const [tmplGroup, setTmplGroup] = useState<"Online Programs" | "In-Person Check-Ins" | "Combined">("Online Programs");
   const [pkgDraft, setPkgDraft] = useState({
     packageName: "",
     includeWorkouts: false,
@@ -1922,8 +1924,71 @@ export default function ClientsScreen() {
           </View>
 
           <ScrollView style={styles.modalBody} showsVerticalScrollIndicator={false}>
+            {/* TEMPLATES */}
+            <Text style={styles.pkgBuilderLabel}>START FROM A TEMPLATE</Text>
+            <View style={styles.tmplGroupRow}>
+              {(["Online Programs", "In-Person Check-Ins", "Combined"] as const).map((g) => (
+                <Pressable
+                  key={g}
+                  style={[styles.tmplGroupTab, tmplGroup === g && styles.tmplGroupTabActive]}
+                  onPress={() => setTmplGroup(g)}
+                >
+                  <Text style={[styles.tmplGroupText, tmplGroup === g && styles.tmplGroupTextActive]}>
+                    {g === "Online Programs" ? "Online" : g === "In-Person Check-Ins" ? "In-Person" : "Combined"}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.tmplScroll} contentContainerStyle={styles.tmplScrollContent}>
+              {SUBSCRIPTION_TEMPLATES.filter(t => t.group === tmplGroup).map((tmpl) => {
+                const isActive =
+                  pkgDraft.packageName === tmpl.packageName &&
+                  pkgDraft.includeWorkouts === tmpl.includeWorkouts &&
+                  pkgDraft.workoutFrequency === tmpl.workoutFrequency &&
+                  pkgDraft.includeCheckins === tmpl.includeCheckins &&
+                  pkgDraft.checkinFrequency === tmpl.checkinFrequency &&
+                  pkgDraft.monthlyPrice === String(tmpl.monthlyPrice);
+                return (
+                  <Pressable
+                    key={tmpl.name}
+                    style={[styles.tmplCard, isActive && styles.tmplCardActive]}
+                    onPress={() => {
+                      setPkgDraft({
+                        packageName: tmpl.packageName,
+                        includeWorkouts: tmpl.includeWorkouts,
+                        workoutFrequency: tmpl.workoutFrequency,
+                        includeCheckins: tmpl.includeCheckins,
+                        checkinFrequency: tmpl.checkinFrequency,
+                        monthlyPrice: String(tmpl.monthlyPrice),
+                        notes: "",
+                      });
+                      Haptics.selectionAsync();
+                    }}
+                  >
+                    <Text style={[styles.tmplCardName, isActive && { color: C.orange }]}>{tmpl.name}</Text>
+                    <Text style={styles.tmplCardTagline}>{tmpl.tagline}</Text>
+                    <View style={styles.tmplCardDetails}>
+                      {tmpl.includeWorkouts && (
+                        <View style={styles.tmplChip}>
+                          <Feather name="file-text" size={10} color={C.dim} />
+                          <Text style={styles.tmplChipText}>{FREQ_LABELS[tmpl.workoutFrequency]}</Text>
+                        </View>
+                      )}
+                      {tmpl.includeCheckins && (
+                        <View style={styles.tmplChip}>
+                          <Feather name="users" size={10} color={C.dim} />
+                          <Text style={styles.tmplChipText}>{FREQ_LABELS[tmpl.checkinFrequency]}</Text>
+                        </View>
+                      )}
+                    </View>
+                    <Text style={[styles.tmplCardPrice, isActive && { color: C.orange }]}>${tmpl.monthlyPrice}/mo</Text>
+                  </Pressable>
+                );
+              })}
+            </ScrollView>
+
             {/* PACKAGE NAME */}
-            <Text style={styles.pkgBuilderLabel}>PACKAGE NAME</Text>
+            <Text style={[styles.pkgBuilderLabel, { marginTop: 8 }]}>PACKAGE NAME</Text>
             <TextInput
               style={styles.pkgBuilderInput}
               value={pkgDraft.packageName}
@@ -3528,6 +3593,92 @@ const styles = StyleSheet.create({
   pkgSaveBtnText: {
     color: "#fff",
     fontSize: 15,
+    fontFamily: "Inter_700Bold",
+  },
+  tmplGroupRow: {
+    flexDirection: "row",
+    gap: 6,
+    marginBottom: 12,
+  },
+  tmplGroupTab: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: C.border,
+    borderRadius: 8,
+    paddingVertical: 7,
+    alignItems: "center",
+  },
+  tmplGroupTabActive: {
+    backgroundColor: `${C.orange}22`,
+    borderColor: `${C.orange}66`,
+  },
+  tmplGroupText: {
+    color: C.dim,
+    fontSize: 12,
+    fontFamily: "Inter_600SemiBold",
+  },
+  tmplGroupTextActive: {
+    color: C.orange,
+  },
+  tmplScroll: {
+    marginHorizontal: -18,
+  },
+  tmplScrollContent: {
+    paddingHorizontal: 18,
+    gap: 8,
+    paddingBottom: 4,
+  },
+  tmplCard: {
+    width: 150,
+    backgroundColor: C.bg,
+    borderWidth: 1,
+    borderColor: C.border,
+    borderRadius: 10,
+    padding: 12,
+  },
+  tmplCardActive: {
+    borderColor: `${C.orange}77`,
+    backgroundColor: `${C.orange}0d`,
+  },
+  tmplCardName: {
+    color: C.text,
+    fontSize: 12,
+    fontFamily: "Inter_700Bold",
+    marginBottom: 3,
+    lineHeight: 16,
+  },
+  tmplCardTagline: {
+    color: C.dim,
+    fontSize: 11,
+    fontFamily: "Inter_400Regular",
+    marginBottom: 8,
+    lineHeight: 15,
+  },
+  tmplCardDetails: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 4,
+    marginBottom: 8,
+  },
+  tmplChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 3,
+    backgroundColor: C.surface,
+    borderWidth: 1,
+    borderColor: C.border,
+    borderRadius: 4,
+    paddingHorizontal: 5,
+    paddingVertical: 2,
+  },
+  tmplChipText: {
+    color: C.dim,
+    fontSize: 10,
+    fontFamily: "Inter_600SemiBold",
+  },
+  tmplCardPrice: {
+    color: C.text,
+    fontSize: 14,
     fontFamily: "Inter_700Bold",
   },
 });
