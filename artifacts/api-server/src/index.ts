@@ -15,5 +15,7 @@ if (Number.isNaN(port) || port <= 0) {
 }
 
 app.listen(port, () => {
-  console.log(`Server listening on port ${port}`);
+  if (process.env.NODE_ENV === "development") {
+    console.log(`Server listening on port ${port}`);
+  }
 });
