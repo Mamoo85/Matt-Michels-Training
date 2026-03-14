@@ -30,8 +30,7 @@
       },
       "permissions": [
         "INTERNET",
-        "CAMERA",
-        "READ_EXTERNAL_STORAGE"
+        "CAMERA"
       ]
     },
     "web": {
@@ -66,9 +65,9 @@
     },
     "extra": {
       "eas": {
-        "projectId": "YOUR_EAS_PROJECT_ID"
+        "projectId": "REPLACE_AFTER_EAS_INIT"
       }
     },
-    "owner": "matthewmichels4"
+    "owner": "REPLACE_WITH_YOUR_EXPO_USERNAME"
   }
 }
