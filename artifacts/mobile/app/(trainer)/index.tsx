@@ -20,10 +20,10 @@ import { Tag } from "@/components/ui/Tag";
 import { LiftChart } from "@/components/LiftChart";
 
 type ClientView = "overview" | "log" | "messages" | "assessments" | "programs";
-type DashTab = "clients" | "mailing" | "signups" | "orders";
+type DashTab = "clients" | "mailing" | "signups" | "orders" | "inquiries";
 
 export default function ClientsScreen() {
-  const { data, updateData, logout, saveProgram, deliverProgram, markStoreOrderSent } = useApp();
+  const { data, updateData, logout, saveProgram, deliverProgram, markStoreOrderSent, markInquiryContacted } = useApp();
   const insets = useSafeAreaInsets();
   const [selId, setSelId] = useState<number | null>(null);
   const [view, setView] = useState<ClientView>("overview");
@@ -191,9 +191,10 @@ export default function ClientsScreen() {
             style={styles.dashTabs}
             contentContainerStyle={styles.dashTabsContent}
           >
-            {(["clients", "mailing", "signups", "orders"] as DashTab[]).map((tab) => {
-              const label = tab === "clients" ? "Clients" : tab === "mailing" ? "Mailing List" : tab === "signups" ? "Classes" : "Store Orders";
+            {(["clients", "mailing", "signups", "orders", "inquiries"] as DashTab[]).map((tab) => {
+              const label = tab === "clients" ? "Clients" : tab === "mailing" ? "Mailing List" : tab === "signups" ? "Classes" : tab === "orders" ? "Store Orders" : "Inquiries";
               const pendingOrders = (data.storeOrders || []).filter(o => o.status !== "sent").length;
+              const pendingInquiries = (data.formCheckRequests || []).filter(r => r.status === "pending").length + (data.coachingInquiries || []).filter(r => r.status === "pending").length;
               const count = tab === "clients" ? data.clients.length : tab === "mailing"
                 ? [...new Set([
                     ...data.clients.filter(c => !!c.email).map(c => c.email!),
@@ -201,7 +202,9 @@ export default function ClientsScreen() {
                   ])].length
                 : tab === "signups"
                 ? (data.groupClassInterests || []).length
-                : pendingOrders;
+                : tab === "orders"
+                ? pendingOrders
+                : pendingInquiries;
               return (
                 <Pressable
                   key={tab}
@@ -512,6 +515,163 @@ export default function ClientsScreen() {
                       </Text>
                     </View>
                   ))
+                )}
+              </ScrollView>
+            );
+          })()}
+
+          {/* INQUIRIES TAB */}
+          {dashTab === "inquiries" && (() => {
+            const TYPE_LABEL: Record<string, string> = {
+              online_coaching: "Online Coaching",
+              meet_prep: "Meet Prep",
+              mentorship: "Mentorship",
+            };
+            const formChecks = [...(data.formCheckRequests || [])].sort(
+              (a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime()
+            );
+            const coachingInquiries = [...(data.coachingInquiries || [])].sort(
+              (a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime()
+            );
+            const total = formChecks.length + coachingInquiries.length;
+            return (
+              <ScrollView contentContainerStyle={[styles.scroll, { paddingBottom: (Platform.OS === "web" ? 34 : insets.bottom) + 100 }]}>
+                {total === 0 ? (
+                  <View style={styles.emptyState}>
+                    <Feather name="inbox" size={36} color={C.muted} />
+                    <Text style={styles.emptyText}>No inquiries yet.</Text>
+                    <Text style={styles.emptySubText}>Form checks, coaching inquiries, meet prep, and mentorship requests appear here.</Text>
+                  </View>
+                ) : (
+                  <>
+                    {formChecks.length > 0 && (
+                      <>
+                        <Text style={styles.inqSectionLabel}>FORM CHECKS</Text>
+                        {formChecks.map((fc) => (
+                          <View key={fc.id} style={styles.inqCard}>
+                            <View style={styles.inqHeader}>
+                              <View style={{ flex: 1 }}>
+                                <Text style={styles.inqName}>{fc.name}</Text>
+                                <Pressable onPress={() => Linking.openURL(`mailto:${fc.email}`).catch(() => {})}>
+                                  <Text style={styles.inqEmail}>{fc.email}</Text>
+                                </Pressable>
+                              </View>
+                              <View style={[styles.inqBadge, fc.status === "replied" && styles.inqBadgeDone]}>
+                                <Text style={[styles.inqBadgeText, fc.status === "replied" && styles.inqBadgeTextDone]}>
+                                  {fc.status === "replied" ? "Replied" : "Pending"}
+                                </Text>
+                              </View>
+                            </View>
+                            <View style={styles.inqDetail}>
+                              <Text style={styles.inqDetailLabel}>Lift</Text>
+                              <Text style={styles.inqDetailValue}>{fc.lift}</Text>
+                            </View>
+                            {!!fc.videoUrl && (
+                              <View style={styles.inqDetail}>
+                                <Text style={styles.inqDetailLabel}>Video</Text>
+                                <Pressable onPress={() => Linking.openURL(fc.videoUrl!).catch(() => {})}>
+                                  <Text style={[styles.inqDetailValue, { color: C.orange }]} numberOfLines={1}>{fc.videoUrl}</Text>
+                                </Pressable>
+                              </View>
+                            )}
+                            <Text style={styles.inqNotes}>{fc.notes}</Text>
+                            <View style={styles.inqActions}>
+                              <Pressable
+                                style={styles.inqActionEmail}
+                                onPress={() => Linking.openURL(
+                                  `mailto:${fc.email}?subject=Form Check Feedback — M² Training&body=Hi ${fc.name.split(" ")[0]},\n\nHere is my feedback on your ${fc.lift}:\n\n[YOUR FEEDBACK]\n\nLet me know if you have questions!\n\nMatt`
+                                ).catch(() => {})}
+                              >
+                                <Feather name="mail" size={14} color={C.dim} />
+                                <Text style={styles.inqActionEmailText}>Reply via Email</Text>
+                              </Pressable>
+                              {fc.status === "pending" && (
+                                <Pressable
+                                  style={styles.inqActionDone}
+                                  onPress={() => {
+                                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                                    markInquiryContacted(fc.id, "formcheck");
+                                  }}
+                                >
+                                  <Feather name="check" size={14} color="#fff" />
+                                  <Text style={styles.inqActionDoneText}>Mark Replied</Text>
+                                </Pressable>
+                              )}
+                            </View>
+                            <Text style={styles.inqDate}>
+                              {new Date(fc.submittedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                            </Text>
+                          </View>
+                        ))}
+                      </>
+                    )}
+
+                    {coachingInquiries.length > 0 && (
+                      <>
+                        <Text style={styles.inqSectionLabel}>COACHING INQUIRIES</Text>
+                        {coachingInquiries.map((ci) => (
+                          <View key={ci.id} style={styles.inqCard}>
+                            <View style={styles.inqHeader}>
+                              <View style={{ flex: 1 }}>
+                                <Text style={styles.inqName}>{ci.name}</Text>
+                                <Pressable onPress={() => Linking.openURL(`mailto:${ci.email}`).catch(() => {})}>
+                                  <Text style={styles.inqEmail}>{ci.email}</Text>
+                                </Pressable>
+                              </View>
+                              <View style={styles.inqTypeBadge}>
+                                <Text style={styles.inqTypeBadgeText}>{TYPE_LABEL[ci.type] ?? ci.type}</Text>
+                              </View>
+                            </View>
+                            <View style={[styles.inqBadge, ci.status === "contacted" && styles.inqBadgeDone, { alignSelf: "flex-start", marginBottom: 8 }]}>
+                              <Text style={[styles.inqBadgeText, ci.status === "contacted" && styles.inqBadgeTextDone]}>
+                                {ci.status === "contacted" ? "Contacted" : "Pending"}
+                              </Text>
+                            </View>
+                            {!!ci.phone && (
+                              <View style={styles.inqDetail}>
+                                <Text style={styles.inqDetailLabel}>Phone</Text>
+                                <Text style={styles.inqDetailValue}>{ci.phone}</Text>
+                              </View>
+                            )}
+                            {!!ci.frequency && (
+                              <View style={styles.inqDetail}>
+                                <Text style={styles.inqDetailLabel}>Frequency</Text>
+                                <Text style={styles.inqDetailValue}>{ci.frequency}</Text>
+                              </View>
+                            )}
+                            <Text style={styles.inqNotes}>{ci.goals}</Text>
+                            {!!ci.notes && <Text style={[styles.inqNotes, { color: C.muted }]}>{ci.notes}</Text>}
+                            <View style={styles.inqActions}>
+                              <Pressable
+                                style={styles.inqActionEmail}
+                                onPress={() => Linking.openURL(
+                                  `mailto:${ci.email}?subject=${TYPE_LABEL[ci.type] ?? "Coaching"} Inquiry — M² Training&body=Hi ${ci.name.split(" ")[0]},\n\nThanks for reaching out about ${TYPE_LABEL[ci.type] ?? "coaching"}. Let's talk more...\n\nMatt`
+                                ).catch(() => {})}
+                              >
+                                <Feather name="mail" size={14} color={C.dim} />
+                                <Text style={styles.inqActionEmailText}>Reply via Email</Text>
+                              </Pressable>
+                              {ci.status === "pending" && (
+                                <Pressable
+                                  style={styles.inqActionDone}
+                                  onPress={() => {
+                                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                                    markInquiryContacted(ci.id, "coaching");
+                                  }}
+                                >
+                                  <Feather name="check" size={14} color="#fff" />
+                                  <Text style={styles.inqActionDoneText}>Mark Contacted</Text>
+                                </Pressable>
+                              )}
+                            </View>
+                            <Text style={styles.inqDate}>
+                              {new Date(ci.submittedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                            </Text>
+                          </View>
+                        ))}
+                      </>
+                    )}
+                  </>
                 )}
               </ScrollView>
             );
@@ -2230,6 +2390,137 @@ const styles = StyleSheet.create({
   orderDate: {
     color: C.dim,
     fontSize: 13,
+    fontFamily: "Inter_400Regular",
+  },
+  inqSectionLabel: {
+    color: C.dim,
+    fontSize: 12,
+    fontFamily: "Inter_700Bold",
+    letterSpacing: 1.2,
+    marginBottom: 8,
+    marginTop: 4,
+  },
+  inqCard: {
+    backgroundColor: C.surface,
+    borderWidth: 1,
+    borderColor: C.border,
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 10,
+  },
+  inqHeader: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 10,
+    marginBottom: 10,
+  },
+  inqName: {
+    color: C.text,
+    fontSize: 15,
+    fontFamily: "Inter_700Bold",
+    marginBottom: 2,
+  },
+  inqEmail: {
+    color: C.orange,
+    fontSize: 13,
+    fontFamily: "Inter_400Regular",
+  },
+  inqBadge: {
+    borderWidth: 1,
+    borderColor: `${C.orange}66`,
+    backgroundColor: `${C.orange}18`,
+    borderRadius: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+  },
+  inqBadgeDone: {
+    borderColor: `${C.green}66`,
+    backgroundColor: `${C.green}18`,
+  },
+  inqBadgeText: {
+    color: C.orange,
+    fontSize: 12,
+    fontFamily: "Inter_700Bold",
+  },
+  inqBadgeTextDone: {
+    color: C.green,
+  },
+  inqTypeBadge: {
+    borderWidth: 1,
+    borderColor: C.border,
+    backgroundColor: C.bg,
+    borderRadius: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+  },
+  inqTypeBadgeText: {
+    color: C.dim,
+    fontSize: 12,
+    fontFamily: "Inter_600SemiBold",
+  },
+  inqDetail: {
+    flexDirection: "row",
+    gap: 8,
+    marginBottom: 6,
+  },
+  inqDetailLabel: {
+    color: C.dim,
+    fontSize: 13,
+    fontFamily: "Inter_600SemiBold",
+    minWidth: 60,
+  },
+  inqDetailValue: {
+    color: C.text,
+    fontSize: 13,
+    fontFamily: "Inter_400Regular",
+    flex: 1,
+  },
+  inqNotes: {
+    color: C.dim,
+    fontSize: 13,
+    fontFamily: "Inter_400Regular",
+    lineHeight: 20,
+    marginBottom: 10,
+  },
+  inqActions: {
+    flexDirection: "row",
+    gap: 8,
+    marginBottom: 8,
+  },
+  inqActionEmail: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    borderWidth: 1,
+    borderColor: C.border,
+    borderRadius: 10,
+    paddingVertical: 10,
+  },
+  inqActionEmailText: {
+    color: C.dim,
+    fontSize: 13,
+    fontFamily: "Inter_600SemiBold",
+  },
+  inqActionDone: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    borderRadius: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    backgroundColor: C.green,
+  },
+  inqActionDoneText: {
+    color: "#fff",
+    fontSize: 13,
+    fontFamily: "Inter_600SemiBold",
+  },
+  inqDate: {
+    color: C.muted,
+    fontSize: 12,
     fontFamily: "Inter_400Regular",
   },
 });

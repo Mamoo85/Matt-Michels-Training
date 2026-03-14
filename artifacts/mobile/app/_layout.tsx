@@ -33,6 +33,10 @@ function RootLayoutNav() {
       <Stack.Screen name="login" options={{ headerShown: false }} />
       <Stack.Screen name="help" options={{ headerShown: false }} />
       <Stack.Screen name="studio-rental" options={{ headerShown: false }} />
+      <Stack.Screen name="form-check" options={{ headerShown: false }} />
+      <Stack.Screen name="online-coaching" options={{ headerShown: false }} />
+      <Stack.Screen name="meet-prep" options={{ headerShown: false }} />
+      <Stack.Screen name="trainer-mentorship" options={{ headerShown: false }} />
       <Stack.Screen name="(client)" options={{ headerShown: false }} />
       <Stack.Screen name="(trainer)" options={{ headerShown: false }} />
     </Stack>

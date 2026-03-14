@@ -317,6 +317,36 @@ export default function HomeScreen() {
           </View>
         </Pressable>
 
+        {/* WORK ONLINE SECTION */}
+        <View style={styles.onlineSection}>
+          <Text style={styles.onlineSectionTitle}>Work with Matt online</Text>
+          <Text style={styles.onlineSectionSub}>No commute. No gym required.</Text>
+          <View style={styles.onlineGrid}>
+            {[
+              { route: "/form-check", icon: "video" as const, label: "REMOTE · $20", title: "Form Check", sub: "Send a video. Get cues back." },
+              { route: "/online-coaching", icon: "trending-up" as const, label: "MONTHLY · $100+", title: "Online Coaching", sub: "Programming + weekly check-ins." },
+              { route: "/meet-prep", icon: "target" as const, label: "12–16 WEEKS", title: "Meet Prep", sub: "Peak for your competition." },
+              { route: "/trainer-mentorship", icon: "users" as const, label: "TRAINERS ONLY", title: "Mentorship", sub: "Programming, coaching, business." },
+            ].map((item) => (
+              <Pressable
+                key={item.route}
+                style={styles.onlineCard}
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  router.push(item.route as any);
+                }}
+              >
+                <View style={styles.onlineCardIcon}>
+                  <Feather name={item.icon} size={18} color={C.orange} />
+                </View>
+                <Text style={styles.onlineCardLabel}>{item.label}</Text>
+                <Text style={styles.onlineCardTitle}>{item.title}</Text>
+                <Text style={styles.onlineCardSub}>{item.sub}</Text>
+              </Pressable>
+            ))}
+          </View>
+        </View>
+
         {/* STUDIO RENTAL CARD */}
         <Pressable
           style={styles.studioCard}
@@ -813,6 +843,62 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: "Inter_400Regular",
     lineHeight: 18,
+  },
+  onlineSection: {
+    marginHorizontal: 16,
+    marginBottom: 12,
+    gap: 10,
+  },
+  onlineSectionTitle: {
+    color: C.text,
+    fontSize: 16,
+    fontFamily: "Inter_700Bold",
+  },
+  onlineSectionSub: {
+    color: C.dim,
+    fontSize: 13,
+    fontFamily: "Inter_400Regular",
+    marginTop: -4,
+  },
+  onlineGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+  },
+  onlineCard: {
+    width: "47.5%",
+    backgroundColor: C.surface,
+    borderWidth: 1,
+    borderColor: C.border,
+    borderRadius: 12,
+    padding: 14,
+    gap: 6,
+  },
+  onlineCardIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 8,
+    backgroundColor: `${C.orange}1a`,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 2,
+  },
+  onlineCardLabel: {
+    color: C.orange,
+    fontSize: 11,
+    fontFamily: "Inter_700Bold",
+    letterSpacing: 0.8,
+  },
+  onlineCardTitle: {
+    color: C.text,
+    fontSize: 14,
+    fontFamily: "Inter_700Bold",
+  },
+  onlineCardSub: {
+    color: C.dim,
+    fontSize: 12,
+    fontFamily: "Inter_400Regular",
+    lineHeight: 17,
   },
   studioCard: {
     backgroundColor: C.surface,

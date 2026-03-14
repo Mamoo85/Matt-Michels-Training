@@ -11,7 +11,9 @@ import {
   Booking,
   Client,
   Challenge,
+  CoachingInquiry,
   CustomProgram,
+  FormCheckRequest,
   GroupClassInterest,
   HelpRequest,
   HomeContent,
@@ -72,6 +74,9 @@ interface AppContextValue {
   submitGroupInterest: (interest: GroupClassInterest) => void;
   submitStoreOrder: (order: StoreOrder) => void;
   markStoreOrderSent: (orderId: string) => void;
+  submitFormCheck: (r: FormCheckRequest) => void;
+  submitCoachingInquiry: (r: CoachingInquiry) => void;
+  markInquiryContacted: (id: string, type: "formcheck" | "coaching") => void;
 }
 
 const AppContext = createContext<AppContextValue | null>(null);
@@ -364,6 +369,44 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     [updateData]
   );
 
+  const submitFormCheck = useCallback(
+    (r: FormCheckRequest) => {
+      updateData((d) => {
+        if (!d.formCheckRequests) d.formCheckRequests = [];
+        d.formCheckRequests.push(r);
+        return d;
+      });
+    },
+    [updateData]
+  );
+
+  const submitCoachingInquiry = useCallback(
+    (r: CoachingInquiry) => {
+      updateData((d) => {
+        if (!d.coachingInquiries) d.coachingInquiries = [];
+        d.coachingInquiries.push(r);
+        return d;
+      });
+    },
+    [updateData]
+  );
+
+  const markInquiryContacted = useCallback(
+    (id: string, type: "formcheck" | "coaching") => {
+      updateData((d) => {
+        if (type === "formcheck") {
+          const r = (d.formCheckRequests || []).find((x) => x.id === id);
+          if (r) { r.status = "replied"; r.repliedAt = nowTs(); }
+        } else {
+          const r = (d.coachingInquiries || []).find((x) => x.id === id);
+          if (r) r.status = "contacted";
+        }
+        return d;
+      });
+    },
+    [updateData]
+  );
+
   return (
     <AppContext.Provider
       value={{
@@ -390,6 +433,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         submitGroupInterest,
         submitStoreOrder,
         markStoreOrderSent,
+        submitFormCheck,
+        submitCoachingInquiry,
+        markInquiryContacted,
       }}
     >
       {children}

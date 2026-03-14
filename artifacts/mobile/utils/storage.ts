@@ -189,6 +189,32 @@ export interface StoreOrder {
   sentAt?: string;
 }
 
+export interface FormCheckRequest {
+  id: string;
+  name: string;
+  email: string;
+  lift: string;
+  videoUrl?: string;
+  notes: string;
+  submittedAt: string;
+  status: "pending" | "replied";
+  trainerReply?: string;
+  repliedAt?: string;
+}
+
+export interface CoachingInquiry {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  goals: string;
+  frequency?: string;
+  notes?: string;
+  type: "online_coaching" | "meet_prep" | "mentorship";
+  submittedAt: string;
+  status: "pending" | "contacted";
+}
+
 export interface AppData {
   clients: Client[];
   challenges: Challenge[];
@@ -201,6 +227,8 @@ export interface AppData {
   customPrograms: CustomProgram[];
   groupClassInterests: GroupClassInterest[];
   storeOrders: StoreOrder[];
+  formCheckRequests: FormCheckRequest[];
+  coachingInquiries: CoachingInquiry[];
   nextId: number;
   homeContent: HomeContent;
 }
@@ -284,6 +312,8 @@ export const EMPTY: AppData = {
   customPrograms: [],
   groupClassInterests: [],
   storeOrders: [],
+  formCheckRequests: [],
+  coachingInquiries: [],
   nextId: 1,
   homeContent: DEFAULT_HOME,
 };
@@ -365,6 +395,8 @@ export async function loadData(): Promise<AppData> {
     if (!parsed.customPrograms) parsed.customPrograms = [];
     if (!parsed.groupClassInterests) parsed.groupClassInterests = [];
     if (!parsed.storeOrders) parsed.storeOrders = [];
+    if (!parsed.formCheckRequests) parsed.formCheckRequests = [];
+    if (!parsed.coachingInquiries) parsed.coachingInquiries = [];
     return parsed;
   } catch {
     return EMPTY;
