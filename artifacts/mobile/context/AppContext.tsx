@@ -262,6 +262,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           status: "requested",
           requestedAt: nowTs(),
         });
+        const client = d.clients.find((c) => c.id === clientId);
+        if (client) {
+          client.messages.push({
+            id: uid(),
+            type: "program_request",
+            text: "I'd like a custom program built for me.",
+            timestamp: nowTs(),
+            trainerRead: false,
+            dismissed: false,
+            trainerReply: null,
+          });
+        }
         return d;
       });
     },

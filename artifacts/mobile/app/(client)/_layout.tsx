@@ -12,8 +12,8 @@ import C from "@/constants/colors";
 
 function NativeTabLayout() {
   const { data, currentClientId } = useApp();
-  const pendingCount = (data.customPrograms || []).filter(
-    (p) => p.clientId === currentClientId && (p.status === "requested" || p.status === "draft")
+  const newProgramCount = (data.customPrograms || []).filter(
+    (p) => p.clientId === currentClientId && p.status === "delivered" && !p.clientViewedAt
   ).length;
 
   return (
@@ -30,7 +30,7 @@ function NativeTabLayout() {
         <Icon sf={{ default: "trophy", selected: "trophy.fill" }} />
         <Label>Challenges</Label>
       </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="programs">
+      <NativeTabs.Trigger name="programs" badge={newProgramCount > 0 ? String(newProgramCount) : undefined}>
         <Icon sf={{ default: "doc.text", selected: "doc.text.fill" }} />
         <Label>Programs</Label>
       </NativeTabs.Trigger>
