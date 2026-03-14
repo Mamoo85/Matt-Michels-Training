@@ -16,6 +16,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as WebBrowser from "expo-web-browser";
 import * as Google from "expo-auth-session/providers/google";
+import { makeRedirectUri } from "expo-auth-session";
 import { useApp } from "@/context/AppContext";
 import C from "@/constants/colors";
 import { BUSINESS } from "@/constants/contact";
@@ -34,10 +35,16 @@ type GoogleBtnProps = {
   onError: (msg: string) => void;
 };
 
+const WEB_REDIRECT_URI = makeRedirectUri({
+  scheme: "m2training",
+  path: "login",
+});
+
 function GoogleSignInButton({ onSuccess, onError }: GoogleBtnProps) {
   const [loading, setLoading] = useState(false);
   const [, response, promptAsync] = Google.useAuthRequest({
     webClientId: GOOGLE_CLIENT_ID,
+    redirectUri: WEB_REDIRECT_URI,
   });
 
   useEffect(() => {
@@ -47,11 +54,16 @@ function GoogleSignInButton({ onSuccess, onError }: GoogleBtnProps) {
         onSuccess(token);
       } else {
         setLoading(false);
-        onError("Google sign-in failed. No access token received.");
+        onError("Google sign-in failed — no access token returned. Try again.");
       }
     } else if (response?.type === "error") {
       setLoading(false);
-      onError("Google sign-in failed. Try again.");
+      const code = (response as any).error?.code ?? (response as any).params?.error ?? "unknown";
+      if (code === "redirect_uri_mismatch" || code === "access_denied") {
+        onError(`Google: redirect URI not authorized in Google Cloud Console.\n\nURI: ${WEB_REDIRECT_URI}`);
+      } else {
+        onError(`Google sign-in error: ${code}. Check your Google Cloud Console.`);
+      }
     } else if (response?.type === "dismiss") {
       setLoading(false);
     }
