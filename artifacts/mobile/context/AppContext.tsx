@@ -17,6 +17,7 @@ import {
   HomeContent,
   Message,
   AvailSlot,
+  StoreOrder,
   Worksheet,
   EMPTY,
   loadData,
@@ -69,6 +70,8 @@ interface AppContextValue {
   deliverProgram: (programId: string) => void;
   markProgramViewed: (programId: string) => void;
   submitGroupInterest: (interest: GroupClassInterest) => void;
+  submitStoreOrder: (order: StoreOrder) => void;
+  markStoreOrderSent: (orderId: string) => void;
 }
 
 const AppContext = createContext<AppContextValue | null>(null);
@@ -335,6 +338,32 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     [updateData]
   );
 
+  const submitStoreOrder = useCallback(
+    (order: StoreOrder) => {
+      updateData((d) => {
+        if (!d.storeOrders) d.storeOrders = [];
+        d.storeOrders.push(order);
+        return d;
+      });
+    },
+    [updateData]
+  );
+
+  const markStoreOrderSent = useCallback(
+    (orderId: string) => {
+      updateData((d) => {
+        if (!d.storeOrders) d.storeOrders = [];
+        const o = d.storeOrders.find((x) => x.id === orderId);
+        if (o) {
+          o.status = "sent";
+          o.sentAt = new Date().toISOString();
+        }
+        return d;
+      });
+    },
+    [updateData]
+  );
+
   return (
     <AppContext.Provider
       value={{
@@ -359,6 +388,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         deliverProgram,
         markProgramViewed,
         submitGroupInterest,
+        submitStoreOrder,
+        markStoreOrderSent,
       }}
     >
       {children}

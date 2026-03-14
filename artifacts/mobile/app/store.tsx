@@ -9,83 +9,106 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useApp } from "@/context/AppContext";
 import C from "@/constants/colors";
+import { uid, nowTs } from "@/utils/storage";
+import type { TrainingLevel } from "@/utils/storage";
 
-const WORKOUTS: { title: string; subtitle: string; desc: string; equipment: string }[] = [
+const STRIPE_CHECKOUT_URL =
+  "https://buy.stripe.com/test_cNi3cvggre7Y2ISe0ffbq00";
+
+const LEVELS: { key: TrainingLevel; label: string; desc: string }[] = [
   {
-    title: "Hotel Room Hustle",
-    subtitle: "Workout 1",
-    desc: "Zero equipment, full body. Burpees, mountain climbers, push-up progressions, and a finisher that will make you question why you ever skipped a gym day.",
-    equipment: "No equipment",
+    key: "beginner",
+    label: "Beginner",
+    desc: "New to structured training or returning after a long break",
   },
   {
-    title: "Airport Layover Circuit",
-    subtitle: "Workout 2",
-    desc: "20 minutes, anywhere. Walk, sprint, bodyweight squats and lunges in a stairwell. Matt's favorite way to keep people honest on long travel days.",
-    equipment: "No equipment",
+    key: "intermediate",
+    label: "Intermediate",
+    desc: "Training consistently for 1+ years with some structure",
   },
   {
-    title: "Parking Lot Power",
-    subtitle: "Workout 3",
-    desc: "Resistance band full-body session. Rows, presses, hinges, and carries — everything you need in a bag you can pack.",
-    equipment: "Resistance band",
-  },
-  {
-    title: "The Suitcase Session",
-    subtitle: "Workout 4",
-    desc: "Use your luggage as a weight. Suitcase carries, goblet squats, Romanian deadlifts, bent-over rows. Looks insane in the lobby. Works even better.",
-    equipment: "Suitcase or bag",
-  },
-  {
-    title: "Morning Activator",
-    subtitle: "Workout 5",
-    desc: "10-minute daily activation routine. Hips, thoracic spine, glutes, and shoulders — the stuff that breaks down when you travel. Do this before anything else.",
-    equipment: "No equipment",
-  },
-  {
-    title: "Upper Body Bodyweight Blast",
-    subtitle: "Workout 6",
-    desc: "Diamonds, wide, incline, decline, archer push-ups. Dips off a chair. Pike press. Pull-up progressions if you find a bar. Upper body destroyed, no gym needed.",
-    equipment: "Optional: sturdy chair",
-  },
-  {
-    title: "Lower Body on Lockdown",
-    subtitle: "Workout 7",
-    desc: "Pistol squat progressions, Bulgarian split squats with a bench, single-leg RDL, and jump variations. Your legs will remember this trip.",
-    equipment: "Bench or chair",
-  },
-  {
-    title: "The 30-Minute Road Reset",
-    subtitle: "Workout 8",
-    desc: "When you've been sitting in a car or plane all day. Full mobility and movement reboot — hip flexors, T-spine, hamstrings, and a light conditioning finish.",
-    equipment: "No equipment",
-  },
-  {
-    title: "Core Control",
-    subtitle: "Workout 9",
-    desc: "Real core training. Not crunches. Dead bugs, hollow holds, Pallof press variations, Copenhagen planks. The deep stability work Matt uses with every athlete.",
-    equipment: "No equipment",
-  },
-  {
-    title: "Conditioning Closer",
-    subtitle: "Workout 10",
-    desc: "High-intensity finisher. Tabata-style intervals, shadow boxing, jump squat variations, and burpee complexes. The one you save for when you need to sweat everything out.",
-    equipment: "No equipment",
+    key: "advanced",
+    label: "Advanced",
+    desc: "Competitive athlete or serious lifter with specific performance goals",
   },
 ];
 
-const STRIPE_CHECKOUT_URL = "https://buy.stripe.com/test_cNi3cvggre7Y2ISe0ffbq00";
+const WHAT_YOU_GET = [
+  {
+    icon: "clipboard" as const,
+    title: "Full written program",
+    desc: "Every exercise, set, rep, and rest period. No guessing.",
+  },
+  {
+    icon: "target" as const,
+    title: "Built around your goals",
+    desc: "Not a template. Matt reads your intake and writes it for you.",
+  },
+  {
+    icon: "tool" as const,
+    title: "Equipment-specific",
+    desc: "Works with what you have — gym, home, or a hotel room.",
+  },
+  {
+    icon: "message-circle" as const,
+    title: "Coaching cues included",
+    desc: "Key technique notes on each movement so you do it right.",
+  },
+];
 
 export default function StoreScreen() {
   const insets = useSafeAreaInsets();
-  const [purchasing, setPurchasing] = useState(false);
+  const { submitStoreOrder } = useApp();
 
-  const handleBuy = async () => {
+  const [step, setStep] = useState<"info" | "submitting" | "done">("info");
+
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [goals, setGoals] = useState("");
+  const [level, setLevel] = useState<TrainingLevel>("intermediate");
+  const [equipment, setEquipment] = useState("");
+  const [notes, setNotes] = useState("");
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const validate = () => {
+    const e: Record<string, string> = {};
+    if (!name.trim()) e.name = "Name is required";
+    if (!email.trim()) e.email = "Email is required";
+    else if (!/\S+@\S+\.\S+/.test(email)) e.email = "Enter a valid email";
+    if (!goals.trim()) e.goals = "Tell Matt what you're working toward";
+    return e;
+  };
+
+  const handleSubmit = async () => {
+    const e = validate();
+    if (Object.keys(e).length > 0) {
+      setErrors(e);
+      return;
+    }
+    setErrors({});
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    setPurchasing(true);
+    setStep("submitting");
+
+    submitStoreOrder({
+      id: uid(),
+      name: name.trim(),
+      email: email.trim(),
+      phone: phone.trim() || undefined,
+      goals: goals.trim(),
+      level,
+      equipment: equipment.trim() || undefined,
+      notes: notes.trim() || undefined,
+      submittedAt: nowTs(),
+      status: "pending",
+    });
+
     try {
       const supported = await Linking.canOpenURL(STRIPE_CHECKOUT_URL);
       if (supported) {
@@ -94,7 +117,8 @@ export default function StoreScreen() {
         window.open(STRIPE_CHECKOUT_URL, "_blank");
       }
     } catch {}
-    setPurchasing(false);
+
+    setStep("done");
   };
 
   return (
@@ -112,82 +136,218 @@ export default function StoreScreen() {
         <View style={{ width: 36 }} />
       </View>
 
-      <ScrollView
-        contentContainerStyle={[
-          styles.scroll,
-          {
-            paddingBottom:
-              (Platform.OS === "web" ? 34 : insets.bottom) + 100,
-          },
-        ]}
-      >
-        <View style={styles.heroCard}>
-          <Text style={styles.heroLabel}>DIGITAL PACK</Text>
-          <Text style={styles.heroTitle}>Workouts on the Road</Text>
-          <Text style={styles.heroBody}>
-            10 complete workouts designed for athletes, coaches, and clients who travel. Hotel rooms, airports, parking lots — Matt has trained in all of them. Now you have his playbook.
+      {step === "done" ? (
+        <View style={styles.doneWrap}>
+          <Feather name="check-circle" size={56} color={C.green} />
+          <Text style={styles.doneTitle}>You're all set.</Text>
+          <Text style={styles.doneBody}>
+            Your intake is saved. Once your payment goes through, Matt will
+            build your custom workout program and send it to{" "}
+            <Text style={{ color: C.orange }}>{email}</Text>. Usually within
+            24 hours.
           </Text>
-          <View style={styles.heroMeta}>
-            <View style={styles.heroBadge}>
-              <Feather name="file-text" size={14} color={C.orange} />
-              <Text style={styles.heroBadgeText}>10 full workouts</Text>
-            </View>
-            <View style={styles.heroBadge}>
-              <Feather name="download" size={14} color={C.orange} />
-              <Text style={styles.heroBadgeText}>Delivered in-app</Text>
-            </View>
-            <View style={styles.heroBadge}>
-              <Feather name="zap" size={14} color={C.orange} />
-              <Text style={styles.heroBadgeText}>No gym needed</Text>
-            </View>
-          </View>
+          <Pressable style={styles.doneBtn} onPress={() => router.back()}>
+            <Text style={styles.doneBtnText}>Back to Home</Text>
+          </Pressable>
         </View>
-
-        <Pressable
-          style={[styles.buyBtn, purchasing && styles.buyBtnDisabled]}
-          onPress={handleBuy}
-          disabled={purchasing}
+      ) : (
+        <ScrollView
+          contentContainerStyle={[
+            styles.scroll,
+            {
+              paddingBottom:
+                (Platform.OS === "web" ? 34 : insets.bottom) + 100,
+            },
+          ]}
+          keyboardShouldPersistTaps="handled"
         >
-          <Text style={styles.buyBtnPrice}>$20</Text>
-          <Text style={styles.buyBtnText}>
-            {purchasing ? "Opening..." : "Get the Pack"}
-          </Text>
-          <Feather name="arrow-right" size={18} color="#fff" />
-        </Pressable>
+          {/* HERO */}
+          <View style={styles.heroCard}>
+            <Text style={styles.heroLabel}>CUSTOM — ONE-TIME — $20</Text>
+            <Text style={styles.heroTitle}>Your Custom Workout Program</Text>
+            <Text style={styles.heroBody}>
+              Fill out your intake below. Matt reads it, builds your program
+              from scratch, and sends it to you. One workout, built
+              specifically for you.
+            </Text>
+          </View>
 
-        <Text style={styles.buyNote}>
-          Secure checkout via Stripe. One-time payment, no subscription.
-        </Text>
-
-        <Text style={styles.sectionTitle}>What's Inside</Text>
-
-        {WORKOUTS.map((w, i) => (
-          <View key={i} style={styles.workoutCard}>
-            <View style={styles.workoutTop}>
-              <View style={styles.workoutNum}>
-                <Text style={styles.workoutNumText}>{String(i + 1).padStart(2, "0")}</Text>
+          {/* WHAT YOU GET */}
+          <Text style={styles.sectionTitle}>What you get</Text>
+          <View style={styles.featuresGrid}>
+            {WHAT_YOU_GET.map((f, i) => (
+              <View key={i} style={styles.featureCard}>
+                <View style={styles.featureIcon}>
+                  <Feather name={f.icon} size={18} color={C.orange} />
+                </View>
+                <View style={styles.featureText}>
+                  <Text style={styles.featureTitle}>{f.title}</Text>
+                  <Text style={styles.featureDesc}>{f.desc}</Text>
+                </View>
               </View>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.workoutSub}>{w.subtitle}</Text>
-                <Text style={styles.workoutTitle}>{w.title}</Text>
+            ))}
+          </View>
+
+          {/* INTAKE FORM */}
+          <Text style={styles.sectionTitle}>Your intake</Text>
+          <Text style={styles.sectionSub}>
+            Matt reads every field. The more detail you give, the better the
+            program.
+          </Text>
+
+          <View style={styles.formCard}>
+            <View style={styles.row}>
+              <View style={[styles.fieldWrap, { flex: 1 }]}>
+                <Text style={styles.label}>Name *</Text>
+                <TextInput
+                  style={[styles.input, errors.name && styles.inputErr]}
+                  value={name}
+                  onChangeText={setName}
+                  placeholder="Your name"
+                  placeholderTextColor={C.muted}
+                  autoCapitalize="words"
+                />
+                {errors.name ? (
+                  <Text style={styles.errText}>{errors.name}</Text>
+                ) : null}
               </View>
             </View>
-            <Text style={styles.workoutDesc}>{w.desc}</Text>
-            <View style={styles.workoutEquip}>
-              <Feather name="box" size={12} color={C.muted} />
-              <Text style={styles.workoutEquipText}>{w.equipment}</Text>
+
+            <View style={styles.fieldWrap}>
+              <Text style={styles.label}>Email *</Text>
+              <TextInput
+                style={[styles.input, errors.email && styles.inputErr]}
+                value={email}
+                onChangeText={setEmail}
+                placeholder="Where Matt sends the program"
+                placeholderTextColor={C.muted}
+                keyboardType="email-address"
+                autoCapitalize="none"
+              />
+              {errors.email ? (
+                <Text style={styles.errText}>{errors.email}</Text>
+              ) : null}
+            </View>
+
+            <View style={styles.fieldWrap}>
+              <Text style={styles.label}>Phone (optional)</Text>
+              <TextInput
+                style={styles.input}
+                value={phone}
+                onChangeText={setPhone}
+                placeholder="In case Matt has a quick question"
+                placeholderTextColor={C.muted}
+                keyboardType="phone-pad"
+              />
+            </View>
+
+            <View style={styles.fieldWrap}>
+              <Text style={styles.label}>Training level *</Text>
+              <View style={styles.levelRow}>
+                {LEVELS.map((l) => (
+                  <Pressable
+                    key={l.key}
+                    style={[
+                      styles.levelBtn,
+                      level === l.key && styles.levelBtnActive,
+                    ]}
+                    onPress={() => setLevel(l.key)}
+                  >
+                    <Text
+                      style={[
+                        styles.levelLabel,
+                        level === l.key && styles.levelLabelActive,
+                      ]}
+                    >
+                      {l.label}
+                    </Text>
+                    <Text
+                      style={[
+                        styles.levelDesc,
+                        level === l.key && styles.levelDescActive,
+                      ]}
+                      numberOfLines={2}
+                    >
+                      {l.desc}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+            </View>
+
+            <View style={styles.fieldWrap}>
+              <Text style={styles.label}>Goals *</Text>
+              <TextInput
+                style={[
+                  styles.input,
+                  styles.textarea,
+                  errors.goals && styles.inputErr,
+                ]}
+                value={goals}
+                onChangeText={setGoals}
+                placeholder="What are you trying to accomplish? Be specific — 'get stronger', 'lose weight', 'prep for a season', 'fix my back'..."
+                placeholderTextColor={C.muted}
+                multiline
+                numberOfLines={4}
+              />
+              {errors.goals ? (
+                <Text style={styles.errText}>{errors.goals}</Text>
+              ) : null}
+            </View>
+
+            <View style={styles.fieldWrap}>
+              <Text style={styles.label}>Equipment available (optional)</Text>
+              <TextInput
+                style={styles.input}
+                value={equipment}
+                onChangeText={setEquipment}
+                placeholder="Full gym, dumbbells, bands, bodyweight only, hotel room..."
+                placeholderTextColor={C.muted}
+              />
+            </View>
+
+            <View style={styles.fieldWrap}>
+              <Text style={styles.label}>Anything else Matt should know?</Text>
+              <TextInput
+                style={[styles.input, styles.textarea]}
+                value={notes}
+                onChangeText={setNotes}
+                placeholder="Injuries, limitations, schedule, preferences..."
+                placeholderTextColor={C.muted}
+                multiline
+                numberOfLines={3}
+              />
             </View>
           </View>
-        ))}
 
-        <View style={styles.guaranteeCard}>
-          <Feather name="shield" size={24} color={C.green} />
-          <Text style={styles.guaranteeTitle}>Matt's Guarantee</Text>
-          <Text style={styles.guaranteeBody}>
-            If you do these 10 workouts and don't feel like you got your $20 worth, email Matt and he'll give you a refund. No forms, no drama.
+          {/* SUBMIT + CHECKOUT */}
+          <Pressable
+            style={[styles.buyBtn, step === "submitting" && styles.buyBtnDisabled]}
+            onPress={handleSubmit}
+            disabled={step === "submitting"}
+          >
+            <Text style={styles.buyBtnPrice}>$20</Text>
+            <Text style={styles.buyBtnText}>
+              {step === "submitting" ? "Saving & opening checkout..." : "Save intake + Checkout"}
+            </Text>
+            <Feather name="arrow-right" size={18} color="#fff" />
+          </Pressable>
+
+          <Text style={styles.buyNote}>
+            Secure checkout via Stripe. One-time payment. Matt builds your
+            program after payment is confirmed.
           </Text>
-        </View>
-      </ScrollView>
+
+          <View style={styles.guaranteeCard}>
+            <Feather name="shield" size={22} color={C.green} />
+            <Text style={styles.guaranteeTitle}>Matt's Guarantee</Text>
+            <Text style={styles.guaranteeBody}>
+              If the program isn't what you needed, email Matt and he'll either
+              fix it or refund you. No forms, no drama.
+            </Text>
+          </View>
+        </ScrollView>
+      )}
     </View>
   );
 }
@@ -223,7 +383,7 @@ const styles = StyleSheet.create({
     borderColor: `${C.orange}44`,
     borderRadius: 16,
     padding: 20,
-    marginBottom: 16,
+    marginBottom: 20,
   },
   heroLabel: {
     color: C.orange,
@@ -234,7 +394,7 @@ const styles = StyleSheet.create({
   },
   heroTitle: {
     color: C.text,
-    fontSize: 26,
+    fontSize: 24,
     fontFamily: "Inter_700Bold",
     marginBottom: 10,
   },
@@ -243,26 +403,136 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: "Inter_400Regular",
     lineHeight: 22,
-    marginBottom: 16,
   },
-  heroMeta: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
+  sectionTitle: {
+    color: C.text,
+    fontSize: 16,
+    fontFamily: "Inter_700Bold",
+    marginBottom: 4,
   },
-  heroBadge: {
+  sectionSub: {
+    color: C.muted,
+    fontSize: 13,
+    fontFamily: "Inter_400Regular",
+    lineHeight: 20,
+    marginBottom: 14,
+  },
+  featuresGrid: {
+    gap: 10,
+    marginBottom: 24,
+  },
+  featureCard: {
+    backgroundColor: C.surface,
+    borderWidth: 1,
+    borderColor: C.border,
+    borderRadius: 12,
+    padding: 14,
     flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 12,
+  },
+  featureIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 8,
+    backgroundColor: `${C.orange}1a`,
     alignItems: "center",
-    gap: 5,
-    backgroundColor: `${C.orange}14`,
-    borderRadius: 20,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
+    justifyContent: "center",
+    flexShrink: 0,
+    marginTop: 2,
   },
-  heroBadgeText: {
-    color: C.orange,
+  featureText: {
+    flex: 1,
+  },
+  featureTitle: {
+    color: C.text,
+    fontSize: 14,
+    fontFamily: "Inter_700Bold",
+    marginBottom: 2,
+  },
+  featureDesc: {
+    color: C.dim,
+    fontSize: 12,
+    fontFamily: "Inter_400Regular",
+    lineHeight: 18,
+  },
+  formCard: {
+    backgroundColor: C.surface,
+    borderWidth: 1,
+    borderColor: C.border,
+    borderRadius: 14,
+    padding: 16,
+    gap: 16,
+    marginBottom: 20,
+  },
+  row: {
+    flexDirection: "row",
+    gap: 10,
+  },
+  fieldWrap: {
+    gap: 6,
+  },
+  label: {
+    color: C.dim,
     fontSize: 12,
     fontFamily: "Inter_600SemiBold",
+    letterSpacing: 0.3,
+  },
+  input: {
+    backgroundColor: C.bg,
+    borderWidth: 1,
+    borderColor: C.border,
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    color: C.text,
+    fontSize: 14,
+    fontFamily: "Inter_400Regular",
+  },
+  inputErr: {
+    borderColor: C.red,
+  },
+  textarea: {
+    minHeight: 88,
+    textAlignVertical: "top",
+    paddingTop: 10,
+  },
+  errText: {
+    color: C.red,
+    fontSize: 11,
+    fontFamily: "Inter_400Regular",
+  },
+  levelRow: {
+    gap: 8,
+  },
+  levelBtn: {
+    borderWidth: 1,
+    borderColor: C.border,
+    borderRadius: 10,
+    padding: 12,
+    backgroundColor: C.bg,
+  },
+  levelBtnActive: {
+    borderColor: C.orange,
+    backgroundColor: `${C.orange}14`,
+  },
+  levelLabel: {
+    color: C.dim,
+    fontSize: 13,
+    fontFamily: "Inter_700Bold",
+    marginBottom: 2,
+  },
+  levelLabelActive: {
+    color: C.orange,
+  },
+  levelDesc: {
+    color: C.muted,
+    fontSize: 12,
+    fontFamily: "Inter_400Regular",
+    lineHeight: 18,
+  },
+  levelDescActive: {
+    color: C.dim,
   },
   buyBtn: {
     backgroundColor: C.orange,
@@ -284,7 +554,7 @@ const styles = StyleSheet.create({
   },
   buyBtnText: {
     color: "#fff",
-    fontSize: 17,
+    fontSize: 15,
     fontFamily: "Inter_600SemiBold",
     flex: 1,
   },
@@ -293,70 +563,8 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontFamily: "Inter_400Regular",
     textAlign: "center",
-    marginBottom: 28,
+    marginBottom: 20,
     lineHeight: 16,
-  },
-  sectionTitle: {
-    color: C.text,
-    fontSize: 16,
-    fontFamily: "Inter_700Bold",
-    marginBottom: 14,
-  },
-  workoutCard: {
-    backgroundColor: C.surface,
-    borderWidth: 1,
-    borderColor: C.border,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 10,
-  },
-  workoutTop: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 12,
-    marginBottom: 8,
-  },
-  workoutNum: {
-    width: 36,
-    height: 36,
-    borderRadius: 8,
-    backgroundColor: `${C.orange}1a`,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  workoutNumText: {
-    color: C.orange,
-    fontSize: 13,
-    fontFamily: "Inter_700Bold",
-  },
-  workoutSub: {
-    color: C.muted,
-    fontSize: 10,
-    fontFamily: "Inter_600SemiBold",
-    letterSpacing: 0.5,
-    marginBottom: 2,
-  },
-  workoutTitle: {
-    color: C.text,
-    fontSize: 15,
-    fontFamily: "Inter_700Bold",
-  },
-  workoutDesc: {
-    color: C.dim,
-    fontSize: 13,
-    fontFamily: "Inter_400Regular",
-    lineHeight: 20,
-    marginBottom: 10,
-  },
-  workoutEquip: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 5,
-  },
-  workoutEquipText: {
-    color: C.muted,
-    fontSize: 11,
-    fontFamily: "Inter_400Regular",
   },
   guaranteeCard: {
     backgroundColor: `${C.green}14`,
@@ -365,14 +573,13 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     padding: 20,
     alignItems: "center",
-    marginTop: 6,
   },
   guaranteeTitle: {
     color: C.text,
-    fontSize: 16,
+    fontSize: 15,
     fontFamily: "Inter_700Bold",
-    marginTop: 10,
-    marginBottom: 8,
+    marginTop: 8,
+    marginBottom: 6,
   },
   guaranteeBody: {
     color: C.dim,
@@ -380,5 +587,38 @@ const styles = StyleSheet.create({
     fontFamily: "Inter_400Regular",
     lineHeight: 21,
     textAlign: "center",
+  },
+  doneWrap: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 32,
+    gap: 16,
+  },
+  doneTitle: {
+    color: C.text,
+    fontSize: 28,
+    fontFamily: "Inter_700Bold",
+  },
+  doneBody: {
+    color: C.dim,
+    fontSize: 15,
+    fontFamily: "Inter_400Regular",
+    lineHeight: 24,
+    textAlign: "center",
+  },
+  doneBtn: {
+    marginTop: 8,
+    backgroundColor: C.surface,
+    borderWidth: 1,
+    borderColor: C.border,
+    borderRadius: 12,
+    paddingHorizontal: 28,
+    paddingVertical: 14,
+  },
+  doneBtnText: {
+    color: C.text,
+    fontSize: 15,
+    fontFamily: "Inter_600SemiBold",
   },
 });

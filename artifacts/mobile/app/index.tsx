@@ -289,9 +289,9 @@ export default function HomeScreen() {
         >
           <View style={styles.storeCardInner}>
             <View style={styles.storeLeft}>
-              <Text style={styles.storeLabel}>DIGITAL PACK · $20</Text>
-              <Text style={styles.storeTitle}>Workouts on the Road</Text>
-              <Text style={styles.storeSub}>10 complete workouts. No gym needed. Hotel rooms, airports, parking lots.</Text>
+              <Text style={styles.storeLabel}>CUSTOM PROGRAM · $20</Text>
+              <Text style={styles.storeTitle}>Your Custom Workout</Text>
+              <Text style={styles.storeSub}>Matt reads your intake and builds a program from scratch — specific to your goals, equipment, and level.</Text>
             </View>
             <View style={styles.storeBadge}>
               <Feather name="package" size={22} color={C.orange} />

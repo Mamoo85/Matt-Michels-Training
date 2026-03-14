@@ -171,6 +171,24 @@ export interface GroupClassInterest {
   submittedAt: string;
 }
 
+export type StoreOrderStatus = "pending" | "building" | "sent";
+export type TrainingLevel = "beginner" | "intermediate" | "advanced";
+
+export interface StoreOrder {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  goals: string;
+  level: TrainingLevel;
+  equipment?: string;
+  notes?: string;
+  submittedAt: string;
+  status: StoreOrderStatus;
+  programTitle?: string;
+  sentAt?: string;
+}
+
 export interface AppData {
   clients: Client[];
   challenges: Challenge[];
@@ -182,6 +200,7 @@ export interface AppData {
   helpRequests: HelpRequest[];
   customPrograms: CustomProgram[];
   groupClassInterests: GroupClassInterest[];
+  storeOrders: StoreOrder[];
   nextId: number;
   homeContent: HomeContent;
 }
@@ -264,6 +283,7 @@ export const EMPTY: AppData = {
   helpRequests: [],
   customPrograms: [],
   groupClassInterests: [],
+  storeOrders: [],
   nextId: 1,
   homeContent: DEFAULT_HOME,
 };
@@ -344,6 +364,7 @@ export async function loadData(): Promise<AppData> {
     if (!parsed.sessionTypes) parsed.sessionTypes = DEFAULT_SESSION_TYPES;
     if (!parsed.customPrograms) parsed.customPrograms = [];
     if (!parsed.groupClassInterests) parsed.groupClassInterests = [];
+    if (!parsed.storeOrders) parsed.storeOrders = [];
     return parsed;
   } catch {
     return EMPTY;

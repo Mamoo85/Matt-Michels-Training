@@ -20,10 +20,10 @@ import { Tag } from "@/components/ui/Tag";
 import { LiftChart } from "@/components/LiftChart";
 
 type ClientView = "overview" | "log" | "messages" | "assessments" | "programs";
-type DashTab = "clients" | "mailing" | "signups";
+type DashTab = "clients" | "mailing" | "signups" | "orders";
 
 export default function ClientsScreen() {
-  const { data, updateData, logout, saveProgram, deliverProgram } = useApp();
+  const { data, updateData, logout, saveProgram, deliverProgram, markStoreOrderSent } = useApp();
   const insets = useSafeAreaInsets();
   const [selId, setSelId] = useState<number | null>(null);
   const [view, setView] = useState<ClientView>("overview");
@@ -185,15 +185,23 @@ export default function ClientsScreen() {
       {selId === null && (
         <View style={{ flex: 1 }}>
           {/* DASH TABS */}
-          <View style={styles.dashTabs}>
-            {(["clients", "mailing", "signups"] as DashTab[]).map((tab) => {
-              const label = tab === "clients" ? "Clients" : tab === "mailing" ? "Mailing List" : "Class Sign-ups";
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={styles.dashTabs}
+            contentContainerStyle={styles.dashTabsContent}
+          >
+            {(["clients", "mailing", "signups", "orders"] as DashTab[]).map((tab) => {
+              const label = tab === "clients" ? "Clients" : tab === "mailing" ? "Mailing List" : tab === "signups" ? "Classes" : "Store Orders";
+              const pendingOrders = (data.storeOrders || []).filter(o => o.status !== "sent").length;
               const count = tab === "clients" ? data.clients.length : tab === "mailing"
                 ? [...new Set([
                     ...data.clients.filter(c => !!c.email).map(c => c.email!),
                     ...(data.groupClassInterests || []).map(g => g.email),
                   ])].length
-                : (data.groupClassInterests || []).length;
+                : tab === "signups"
+                ? (data.groupClassInterests || []).length
+                : pendingOrders;
               return (
                 <Pressable
                   key={tab}
@@ -213,7 +221,7 @@ export default function ClientsScreen() {
                 </Pressable>
               );
             })}
-          </View>
+          </ScrollView>
 
           {/* CLIENTS TAB */}
           {dashTab === "clients" && (
@@ -395,6 +403,115 @@ export default function ClientsScreen() {
                       );
                     })}
                   </>
+                )}
+              </ScrollView>
+            );
+          })()}
+
+          {/* STORE ORDERS TAB */}
+          {dashTab === "orders" && (() => {
+            const orders = [...(data.storeOrders || [])].sort(
+              (a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime()
+            );
+            const STATUS_COLOR: Record<string, string> = {
+              pending: C.orange,
+              building: "#4a9eff",
+              sent: C.green,
+            };
+            const STATUS_LABEL: Record<string, string> = {
+              pending: "Pending",
+              building: "Building",
+              sent: "Sent",
+            };
+            return (
+              <ScrollView contentContainerStyle={[styles.scroll, { paddingBottom: (Platform.OS === "web" ? 34 : insets.bottom) + 100 }]}>
+                {orders.length === 0 ? (
+                  <View style={styles.emptyState}>
+                    <Feather name="shopping-bag" size={36} color={C.muted} />
+                    <Text style={styles.emptyText}>No store orders yet.</Text>
+                    <Text style={styles.emptySubText}>When someone buys a custom workout program, their intake shows up here.</Text>
+                  </View>
+                ) : (
+                  orders.map((order) => (
+                    <View key={order.id} style={styles.orderCard}>
+                      {/* Header row */}
+                      <View style={styles.orderHeader}>
+                        <View style={{ flex: 1 }}>
+                          <Text style={styles.orderName}>{order.name}</Text>
+                          <Pressable onPress={() => Linking.openURL(`mailto:${order.email}`).catch(() => {})}>
+                            <Text style={styles.orderEmail}>{order.email}</Text>
+                          </Pressable>
+                        </View>
+                        <View style={[styles.orderStatusBadge, { borderColor: STATUS_COLOR[order.status] + "60", backgroundColor: STATUS_COLOR[order.status] + "18" }]}>
+                          <Text style={[styles.orderStatusText, { color: STATUS_COLOR[order.status] }]}>
+                            {STATUS_LABEL[order.status]}
+                          </Text>
+                        </View>
+                      </View>
+
+                      {/* Intake details */}
+                      <View style={styles.orderDetails}>
+                        <View style={styles.orderDetailRow}>
+                          <Text style={styles.orderDetailLabel}>Level</Text>
+                          <Text style={styles.orderDetailValue}>{order.level.charAt(0).toUpperCase() + order.level.slice(1)}</Text>
+                        </View>
+                        {!!order.phone && (
+                          <View style={styles.orderDetailRow}>
+                            <Text style={styles.orderDetailLabel}>Phone</Text>
+                            <Text style={styles.orderDetailValue}>{order.phone}</Text>
+                          </View>
+                        )}
+                        {!!order.equipment && (
+                          <View style={styles.orderDetailRow}>
+                            <Text style={styles.orderDetailLabel}>Equipment</Text>
+                            <Text style={styles.orderDetailValue}>{order.equipment}</Text>
+                          </View>
+                        )}
+                      </View>
+
+                      <View style={styles.orderSection}>
+                        <Text style={styles.orderSectionLabel}>Goals</Text>
+                        <Text style={styles.orderSectionText}>{order.goals}</Text>
+                      </View>
+
+                      {!!order.notes && (
+                        <View style={styles.orderSection}>
+                          <Text style={styles.orderSectionLabel}>Additional notes</Text>
+                          <Text style={styles.orderSectionText}>{order.notes}</Text>
+                        </View>
+                      )}
+
+                      {/* Action buttons */}
+                      <View style={styles.orderActions}>
+                        <Pressable
+                          style={styles.orderActionEmail}
+                          onPress={() => Linking.openURL(
+                            `mailto:${order.email}?subject=Your Custom Workout Program — M² Training&body=Hi ${order.name.split(" ")[0]},\n\nHere is your custom workout program:\n\n[PROGRAM CONTENT]\n\nLet me know if you have any questions!\n\nMatt`
+                          ).catch(() => {})}
+                        >
+                          <Feather name="mail" size={14} color={C.dim} />
+                          <Text style={styles.orderActionEmailText}>Email Program</Text>
+                        </Pressable>
+
+                        {order.status !== "sent" && (
+                          <Pressable
+                            style={styles.orderActionSent}
+                            onPress={() => {
+                              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                              markStoreOrderSent(order.id);
+                            }}
+                          >
+                            <Feather name="check" size={14} color="#fff" />
+                            <Text style={styles.orderActionSentText}>Mark Sent</Text>
+                          </Pressable>
+                        )}
+                      </View>
+
+                      <Text style={styles.orderDate}>
+                        Received {new Date(order.submittedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                      </Text>
+                    </View>
+                  ))
                 )}
               </ScrollView>
             );
@@ -1820,17 +1937,21 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   dashTabs: {
-    flexDirection: "row",
     borderBottomWidth: 1,
     borderBottomColor: C.border,
     backgroundColor: C.bg,
+    flexShrink: 0,
+  },
+  dashTabsContent: {
+    flexDirection: "row",
+    paddingHorizontal: 4,
   },
   dashTab: {
-    flex: 1,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 10,
+    paddingHorizontal: 14,
     gap: 5,
     borderBottomWidth: 2,
     borderBottomColor: "transparent",
@@ -1991,5 +2112,124 @@ const styles = StyleSheet.create({
     fontFamily: "Inter_400Regular",
     fontStyle: "italic",
     marginTop: 4,
+  },
+  orderCard: {
+    backgroundColor: C.surface,
+    borderWidth: 1,
+    borderColor: C.border,
+    borderRadius: 14,
+    padding: 16,
+    marginBottom: 12,
+  },
+  orderHeader: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 10,
+    marginBottom: 12,
+  },
+  orderName: {
+    color: C.text,
+    fontSize: 15,
+    fontFamily: "Inter_700Bold",
+    marginBottom: 2,
+  },
+  orderEmail: {
+    color: C.orange,
+    fontSize: 12,
+    fontFamily: "Inter_400Regular",
+    textDecorationLine: "underline",
+  },
+  orderStatusBadge: {
+    borderWidth: 1,
+    borderRadius: 20,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  orderStatusText: {
+    fontSize: 11,
+    fontFamily: "Inter_700Bold",
+  },
+  orderDetails: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    marginBottom: 10,
+  },
+  orderDetailRow: {
+    flexDirection: "row",
+    gap: 4,
+    alignItems: "center",
+    backgroundColor: C.bg,
+    borderRadius: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  orderDetailLabel: {
+    color: C.muted,
+    fontSize: 11,
+    fontFamily: "Inter_600SemiBold",
+  },
+  orderDetailValue: {
+    color: C.dim,
+    fontSize: 11,
+    fontFamily: "Inter_400Regular",
+  },
+  orderSection: {
+    marginBottom: 10,
+  },
+  orderSectionLabel: {
+    color: C.muted,
+    fontSize: 11,
+    fontFamily: "Inter_600SemiBold",
+    letterSpacing: 0.3,
+    marginBottom: 4,
+  },
+  orderSectionText: {
+    color: C.dim,
+    fontSize: 13,
+    fontFamily: "Inter_400Regular",
+    lineHeight: 20,
+  },
+  orderActions: {
+    flexDirection: "row",
+    gap: 8,
+    marginTop: 6,
+    marginBottom: 8,
+  },
+  orderActionEmail: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    borderWidth: 1,
+    borderColor: C.border,
+    borderRadius: 10,
+    paddingVertical: 10,
+  },
+  orderActionEmailText: {
+    color: C.dim,
+    fontSize: 13,
+    fontFamily: "Inter_600SemiBold",
+  },
+  orderActionSent: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    borderRadius: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    backgroundColor: C.green,
+  },
+  orderActionSentText: {
+    color: "#fff",
+    fontSize: 13,
+    fontFamily: "Inter_600SemiBold",
+  },
+  orderDate: {
+    color: C.muted,
+    fontSize: 11,
+    fontFamily: "Inter_400Regular",
   },
 });
