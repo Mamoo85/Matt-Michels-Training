@@ -77,7 +77,7 @@ const WORKOUTS: { title: string; subtitle: string; desc: string; equipment: stri
   },
 ];
 
-const STRIPE_CHECKOUT_URL = "https://buy.stripe.com/workouts_on_the_road";
+const STRIPE_CHECKOUT_URL = "https://buy.stripe.com/test_cNi3cvggre7Y2ISe0ffbq00";
 
 export default function StoreScreen() {
   const insets = useSafeAreaInsets();
@@ -87,12 +87,11 @@ export default function StoreScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setPurchasing(true);
     try {
-      if (Platform.OS === "web") {
-        window.open("mailto:matthewmichels4@gmail.com?subject=Workouts on the Road — Purchase&body=Hi Matt, I'd like to purchase the Workouts on the Road pack for $20. Please send me the payment link!", "_blank");
-      } else {
-        await Linking.openURL(
-          "mailto:matthewmichels4@gmail.com?subject=Workouts%20on%20the%20Road%20%E2%80%94%20Purchase&body=Hi%20Matt%2C%20I%27d%20like%20to%20purchase%20the%20Workouts%20on%20the%20Road%20pack%20for%20%2420.%20Please%20send%20me%20the%20payment%20link!"
-        );
+      const supported = await Linking.canOpenURL(STRIPE_CHECKOUT_URL);
+      if (supported) {
+        await Linking.openURL(STRIPE_CHECKOUT_URL);
+      } else if (Platform.OS === "web") {
+        window.open(STRIPE_CHECKOUT_URL, "_blank");
       }
     } catch {}
     setPurchasing(false);
@@ -157,7 +156,7 @@ export default function StoreScreen() {
         </Pressable>
 
         <Text style={styles.buyNote}>
-          Stripe checkout coming soon. Clicking above emails Matt directly to complete your purchase.
+          Secure checkout via Stripe. One-time payment, no subscription.
         </Text>
 
         <Text style={styles.sectionTitle}>What's Inside</Text>

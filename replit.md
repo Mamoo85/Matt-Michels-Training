@@ -71,6 +71,10 @@ Full-featured **M² Training** mobile app built with Expo React Native and Expo 
   - Settings tab: edit home content, toggle session types, manage Matt's Never Wrong help requests
 - Teams screen: Team & Youth Programs pitch page with flexible delivery options, credibility copy, "Get in touch" CTA
 - Help screen: Matt's Never Wrong - anyone can submit, pay-what-you-feel
+- Store screen: Workouts on the Road digital pack ($20, 10 workouts), Stripe Payment Link checkout, workout preview list, Matt's guarantee card
+- Group Classes screen: interest signups for Weekend Rolling Classes, Youth 14-16, Youth 17-18; athlete info fields for youth programs; data saved to AppData.groupClassInterests
+- Trainer dashboard: 3 tabs (Clients / Mailing List / Class Sign-ups); Mailing List deduplicates all emails, "Quick Email" opens mailto with BCC; Class Sign-ups shows all group interest entries grouped by program
+- Easter egg: animated trippy screen (pyramid + stars + grid) accessible via "DO NOT CLICK THIS!" button in footer
 
 **Tech:**
 - State: AsyncStorage via `utils/storage.ts` + `context/AppContext.tsx`
@@ -85,8 +89,11 @@ Express 5 API server. Routes live in `src/routes/` and use `@workspace/api-zod` 
 
 - Entry: `src/index.ts` — reads `PORT`, starts Express
 - App setup: `src/app.ts` — mounts CORS, JSON/urlencoded parsing, routes at `/api`
-- Routes: `src/routes/index.ts` mounts sub-routers; `src/routes/health.ts` exposes `GET /health` (full path: `/api/health`)
-- Depends on: `@workspace/db`, `@workspace/api-zod`
+- Routes: `src/routes/index.ts` mounts sub-routers; `src/routes/health.ts` exposes `GET /health`; `src/routes/checkout.ts` exposes `POST /api/checkout/road-workouts`
+- Stripe: `src/stripeClient.ts` — thin wrapper for direct Stripe REST API calls using `STRIPE_SECRET_KEY` env var; falls back gracefully to the payment link URL if key is absent
+- Stripe products: `prod_U959ypqspVNVlW` (Workouts on the Road, $20, `price_1TAmz1ExKk6XaaWgWpTBxlIs`)
+- Stripe Payment Link: `https://buy.stripe.com/test_cNi3cvggre7Y2ISe0ffbq00` (TEST MODE — switch to live when going to production)
+- Depends on: `@workspace/db`, `@workspace/api-zod`, `@replit/connectors-sdk`
 - `pnpm --filter @workspace/api-server run dev` — run the dev server
 - `pnpm --filter @workspace/api-server run build` — production esbuild bundle (`dist/index.cjs`)
 - Build bundles an allowlist of deps (express, cors, pg, drizzle-orm, zod, etc.) and externalizes the rest
