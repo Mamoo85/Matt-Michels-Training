@@ -164,12 +164,6 @@ export default function HomeScreen() {
           </View>
         </Pressable>
 
-        {/* QUOTE */}
-        <View style={styles.quoteBanner}>
-          <Text style={styles.quoteText}>"{quote}"</Text>
-          <Text style={styles.quoteCredit}>— M² Training</Text>
-        </View>
-
         {/* TEAM & YOUTH PROGRAMS */}
         <View style={styles.teamCard}>
           <Text style={styles.teamLabel}>TEAM & YOUTH PROGRAMS</Text>
@@ -196,6 +190,12 @@ export default function HomeScreen() {
             <Text style={styles.teamBtnText}>I Can Do That</Text>
             <Feather name="arrow-right" size={16} color={C.white} />
           </Pressable>
+        </View>
+
+        {/* QUOTE */}
+        <View style={styles.quoteBanner}>
+          <Text style={styles.quoteText}>"{quote}"</Text>
+          <Text style={styles.quoteCredit}>— M² Training</Text>
         </View>
 
         {/* WORDS FROM MATT */}

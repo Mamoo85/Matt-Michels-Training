@@ -66,6 +66,7 @@ interface AppContextValue {
   requestProgram: (clientId: number) => void;
   saveProgram: (program: CustomProgram) => void;
   deliverProgram: (programId: string) => void;
+  markProgramViewed: (programId: string) => void;
 }
 
 const AppContext = createContext<AppContextValue | null>(null);
@@ -295,6 +296,20 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     [updateData]
   );
 
+  const markProgramViewed = useCallback(
+    (programId: string) => {
+      updateData((d) => {
+        if (!d.customPrograms) d.customPrograms = [];
+        const p = d.customPrograms.find((x) => x.id === programId);
+        if (p) {
+          p.clientViewedAt = nowTs();
+        }
+        return d;
+      });
+    },
+    [updateData]
+  );
+
   return (
     <AppContext.Provider
       value={{
@@ -317,6 +332,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         requestProgram,
         saveProgram,
         deliverProgram,
+        markProgramViewed,
       }}
     >
       {children}

@@ -16,7 +16,7 @@ import C from "@/constants/colors";
 import { CustomProgram, fmt } from "@/utils/storage";
 
 export default function ProgramsScreen() {
-  const { data, currentClientId, requestProgram } = useApp();
+  const { data, currentClientId, requestProgram, markProgramViewed } = useApp();
   const insets = useSafeAreaInsets();
   const [viewProgram, setViewProgram] = useState<CustomProgram | null>(null);
   const [requested, setRequested] = useState(false);
@@ -117,7 +117,10 @@ export default function ProgramsScreen() {
               <Pressable
                 key={p.id}
                 style={styles.programCard}
-                onPress={() => setViewProgram(p)}
+                onPress={() => {
+                  setViewProgram(p);
+                  if (!p.clientViewedAt) markProgramViewed(p.id);
+                }}
               >
                 <View style={styles.programIcon}>
                   <Feather name="file-text" size={20} color={C.orange} />

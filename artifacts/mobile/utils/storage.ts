@@ -143,6 +143,7 @@ export interface CustomProgram {
   requestedAt: string;
   createdAt?: string;
   deliveredAt?: string;
+  clientViewedAt?: string;
 }
 
 export interface HomeContent {

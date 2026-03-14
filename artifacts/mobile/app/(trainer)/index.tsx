@@ -815,15 +815,43 @@ export default function ClientsScreen() {
                               .join(" · ")}
                           </Text>
                         </View>
-                        <Pressable
-                          onPress={() => {
-                            setPgExercises((prev) =>
-                              prev.filter((x) => x.id !== ex.id)
-                            );
-                          }}
-                        >
-                          <Feather name="trash-2" size={14} color={C.red} />
-                        </Pressable>
+                        <View style={styles.pgExActions}>
+                          {i > 0 && (
+                            <Pressable
+                              onPress={() => {
+                                setPgExercises((prev) => {
+                                  const arr = [...prev];
+                                  [arr[i - 1], arr[i]] = [arr[i], arr[i - 1]];
+                                  return arr;
+                                });
+                              }}
+                            >
+                              <Feather name="chevron-up" size={16} color={C.dim} />
+                            </Pressable>
+                          )}
+                          {i < pgExercises.length - 1 && (
+                            <Pressable
+                              onPress={() => {
+                                setPgExercises((prev) => {
+                                  const arr = [...prev];
+                                  [arr[i], arr[i + 1]] = [arr[i + 1], arr[i]];
+                                  return arr;
+                                });
+                              }}
+                            >
+                              <Feather name="chevron-down" size={16} color={C.dim} />
+                            </Pressable>
+                          )}
+                          <Pressable
+                            onPress={() => {
+                              setPgExercises((prev) =>
+                                prev.filter((x) => x.id !== ex.id)
+                              );
+                            }}
+                          >
+                            <Feather name="trash-2" size={14} color={C.red} />
+                          </Pressable>
+                        </View>
                       </View>
                     ))}
                   </View>
@@ -1589,6 +1617,11 @@ const styles = StyleSheet.create({
     color: C.dim,
     fontSize: 11,
     fontFamily: "Inter_400Regular",
+  },
+  pgExActions: {
+    flexDirection: "column",
+    alignItems: "center",
+    gap: 2,
   },
   pgAddExCard: {
     backgroundColor: `${C.orange}08`,

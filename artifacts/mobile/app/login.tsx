@@ -141,7 +141,9 @@ export default function LoginScreen() {
         {mode === "choose" && (
           <View style={styles.center}>
             <Text style={styles.title}>Welcome back</Text>
-            <Text style={styles.subtitle}>Choose how you want to sign in</Text>
+            <Text style={styles.subtitle}>
+              20+ years. 50+ college athletes produced. Thousands trained. Zero injuries. Real training, real results.
+            </Text>
             <View style={styles.choiceGroup}>
               <Pressable
                 style={[styles.choiceBtn, { backgroundColor: C.orange }]}

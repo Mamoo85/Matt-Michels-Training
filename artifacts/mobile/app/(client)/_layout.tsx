@@ -44,8 +44,8 @@ function NativeTabLayout() {
 
 function ClassicTabLayout() {
   const { data, currentClientId } = useApp();
-  const programCount = (data.customPrograms || []).filter(
-    (p) => p.clientId === currentClientId && p.status === "delivered"
+  const newProgramCount = (data.customPrograms || []).filter(
+    (p) => p.clientId === currentClientId && p.status === "delivered" && !p.clientViewedAt
   ).length;
 
   const isIOS = Platform.OS === "ios";
@@ -125,7 +125,7 @@ function ClassicTabLayout() {
             ) : (
               <Feather name="file-text" size={22} color={color} />
             ),
-          tabBarBadge: programCount > 0 ? programCount : undefined,
+          tabBarBadge: newProgramCount > 0 ? newProgramCount : undefined,
           tabBarBadgeStyle: { backgroundColor: C.orange },
         }}
       />
