@@ -430,13 +430,13 @@ const BookingStyles = StyleSheet.create({
   },
   dateTime: {
     color: C.dim,
-    fontSize: 11,
+    fontSize: 13,
     fontFamily: "Inter_400Regular",
     marginTop: 3,
   },
   note: {
     color: C.dim,
-    fontSize: 11,
+    fontSize: 13,
     fontFamily: "Inter_400Regular",
     fontStyle: "italic",
     marginTop: 6,
@@ -456,7 +456,7 @@ const BookingStyles = StyleSheet.create({
   },
   changeLabel: {
     color: C.dim,
-    fontSize: 11,
+    fontSize: 13,
     fontFamily: "Inter_400Regular",
     marginBottom: 8,
   },
@@ -473,7 +473,7 @@ const BookingStyles = StyleSheet.create({
     paddingVertical: 5,
   },
   statusBtnText: {
-    fontSize: 11,
+    fontSize: 13,
     fontFamily: "Inter_600SemiBold",
   },
 });
@@ -536,14 +536,14 @@ const styles = StyleSheet.create({
   },
   sectionLabel: {
     color: C.dim,
-    fontSize: 10,
+    fontSize: 12,
     fontFamily: "Inter_700Bold",
     letterSpacing: 2,
     marginBottom: 10,
   },
   emptyState: {
     alignItems: "center",
-    paddingVertical: 40,
+    paddingVertical: 20,
     gap: 8,
   },
   emptyText: {

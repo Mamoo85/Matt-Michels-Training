@@ -86,7 +86,7 @@ function GoogleButtonDisabled() {
       <Text style={[styles.socialBtnText, { color: C.dim }]}>
         Continue with Google
       </Text>
-      <Text style={{ color: C.dim, fontSize: 11 }}>(setup needed)</Text>
+      <Text style={{ color: C.dim, fontSize: 13 }}>(setup needed)</Text>
     </Pressable>
   );
 }
@@ -273,7 +273,7 @@ export default function LoginScreen() {
                 setMode("trainer-pw");
                 setErr("");
               }}
-              style={{ marginTop: 32 }}
+              style={{ marginTop: 16 }}
             >
               <Text style={styles.trainerLink}>Trainer access</Text>
             </Pressable>
@@ -412,7 +412,7 @@ const styles = StyleSheet.create({
   scroll: {
     flexGrow: 1,
     paddingHorizontal: 24,
-    paddingTop: 48,
+    paddingTop: 28,
   },
   center: {
     alignItems: "center",
@@ -427,7 +427,7 @@ const styles = StyleSheet.create({
     color: C.dim,
     fontSize: 14,
     fontFamily: "Inter_400Regular",
-    marginBottom: 40,
+    marginBottom: 20,
     textAlign: "center",
     lineHeight: 22,
   },
@@ -472,7 +472,7 @@ const styles = StyleSheet.create({
     gap: 12,
     width: "100%",
     maxWidth: 340,
-    marginVertical: 20,
+    marginVertical: 12,
   },
   dividerLine: {
     flex: 1,
@@ -527,7 +527,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: "Inter_400Regular",
     lineHeight: 22,
-    marginBottom: 28,
+    marginBottom: 16,
   },
   input: {
     backgroundColor: C.surface,
@@ -571,7 +571,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: "Inter_400Regular",
     textAlign: "center",
-    marginTop: 20,
+    marginTop: 12,
     lineHeight: 18,
   },
 });

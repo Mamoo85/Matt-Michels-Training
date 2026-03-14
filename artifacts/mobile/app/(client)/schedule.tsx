@@ -576,14 +576,14 @@ const styles = StyleSheet.create({
   },
   sectionLabel: {
     color: C.dim,
-    fontSize: 10,
+    fontSize: 12,
     fontFamily: "Inter_700Bold",
     letterSpacing: 2,
     marginBottom: 10,
   },
   emptyState: {
     alignItems: "center",
-    paddingVertical: 28,
+    paddingVertical: 16,
     gap: 8,
   },
   emptyText: {
@@ -624,7 +624,7 @@ const styles = StyleSheet.create({
   },
   bookingNote: {
     color: C.dim,
-    fontSize: 11,
+    fontSize: 13,
     fontFamily: "Inter_400Regular",
     fontStyle: "italic",
     marginTop: 4,
@@ -643,7 +643,7 @@ const styles = StyleSheet.create({
   },
   historyDate: {
     color: C.dim,
-    fontSize: 11,
+    fontSize: 13,
     fontFamily: "Inter_400Regular",
   },
   historyType: {
@@ -712,7 +712,7 @@ const styles = StyleSheet.create({
   },
   typeDuration: {
     color: C.dim,
-    fontSize: 11,
+    fontSize: 13,
     fontFamily: "Inter_400Regular",
   },
   nextBtn: {
@@ -834,7 +834,7 @@ const styles = StyleSheet.create({
   },
   paymentNote: {
     color: C.dim,
-    fontSize: 11,
+    fontSize: 13,
     fontFamily: "Inter_400Regular",
     marginBottom: 14,
     textAlign: "center",

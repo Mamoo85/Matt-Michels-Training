@@ -383,12 +383,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: `${C.orange}44`,
     borderRadius: 16,
-    padding: 20,
-    marginBottom: 20,
+    padding: 14,
+    marginBottom: 12,
   },
   heroLabel: {
     color: C.orange,
-    fontSize: 11,
+    fontSize: 13,
     fontFamily: "Inter_700Bold",
     letterSpacing: 1.2,
     marginBottom: 6,
@@ -420,7 +420,7 @@ const styles = StyleSheet.create({
   },
   featuresGrid: {
     gap: 10,
-    marginBottom: 24,
+    marginBottom: 14,
   },
   featureCard: {
     backgroundColor: C.surface,
@@ -463,8 +463,8 @@ const styles = StyleSheet.create({
     borderColor: C.border,
     borderRadius: 14,
     padding: 16,
-    gap: 16,
-    marginBottom: 20,
+    gap: 10,
+    marginBottom: 12,
   },
   row: {
     flexDirection: "row",
@@ -500,7 +500,7 @@ const styles = StyleSheet.create({
   },
   errText: {
     color: C.red,
-    fontSize: 11,
+    fontSize: 13,
     fontFamily: "Inter_400Regular",
   },
   levelRow: {
@@ -561,10 +561,10 @@ const styles = StyleSheet.create({
   },
   buyNote: {
     color: C.dim,
-    fontSize: 11,
+    fontSize: 13,
     fontFamily: "Inter_400Regular",
     textAlign: "center",
-    marginBottom: 20,
+    marginBottom: 12,
     lineHeight: 16,
   },
   guaranteeCard: {
@@ -572,7 +572,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: `${C.green}44`,
     borderRadius: 14,
-    padding: 20,
+    padding: 14,
     alignItems: "center",
   },
   guaranteeTitle: {
@@ -593,8 +593,8 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    padding: 32,
-    gap: 16,
+    padding: 14,
+    gap: 10,
   },
   doneTitle: {
     color: C.text,

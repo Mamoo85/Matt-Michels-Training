@@ -285,11 +285,11 @@ const styles = StyleSheet.create({
     fontFamily: "Inter_700Bold",
   },
   scroll: {
-    padding: 20,
+    padding: 14,
   },
   pageLabel: {
     color: C.orange,
-    fontSize: 11,
+    fontSize: 13,
     fontFamily: "Inter_700Bold",
     letterSpacing: 1.2,
     marginBottom: 6,
@@ -339,7 +339,7 @@ const styles = StyleSheet.create({
   },
   classAges: {
     color: C.orange,
-    fontSize: 11,
+    fontSize: 13,
     fontFamily: "Inter_600SemiBold",
   },
   classDesc: {
@@ -356,12 +356,12 @@ const styles = StyleSheet.create({
   },
   classMetaText: {
     color: C.dim,
-    fontSize: 11,
+    fontSize: 13,
     fontFamily: "Inter_400Regular",
   },
   classDot: {
     color: C.muted,
-    fontSize: 11,
+    fontSize: 13,
     marginHorizontal: 2,
   },
   radioOuter: {

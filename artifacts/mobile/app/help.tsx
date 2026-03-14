@@ -282,7 +282,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   scroll: {
-    padding: 20,
+    padding: 14,
   },
   intro: {
     marginBottom: 18,
@@ -306,7 +306,7 @@ const styles = StyleSheet.create({
     borderColor: `${C.orange}33`,
     borderRadius: 8,
     padding: 14,
-    marginBottom: 20,
+    marginBottom: 12,
   },
   guaranteeTop: {
     flexDirection: "row",
@@ -371,7 +371,7 @@ const styles = StyleSheet.create({
   },
   catDesc: {
     color: C.dim,
-    fontSize: 11,
+    fontSize: 13,
     fontFamily: "Inter_400Regular",
   },
   pricingCard: {
@@ -436,7 +436,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    padding: 32,
+    padding: 14,
   },
   successIconWrap: {
     width: 80,
@@ -447,7 +447,7 @@ const styles = StyleSheet.create({
     borderColor: `${C.orange}40`,
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 24,
+    marginBottom: 14,
   },
   successTitle: {
     color: C.text,

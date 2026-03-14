@@ -201,14 +201,14 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   scroll: {
-    padding: 20,
+    padding: 14,
   },
   intro: {
     color: C.dim,
     fontSize: 15,
     fontFamily: "Inter_400Regular",
     lineHeight: 22,
-    marginBottom: 20,
+    marginBottom: 12,
     paddingBottom: 20,
     borderBottomWidth: 1,
     borderBottomColor: C.border,
@@ -296,7 +296,7 @@ const styles = StyleSheet.create({
   successContainer: {
     alignItems: "center",
     paddingVertical: 60,
-    gap: 16,
+    gap: 10,
   },
   successTitle: {
     color: C.text,

@@ -289,7 +289,7 @@ const styles = StyleSheet.create({
   },
   emptyState: {
     alignItems: "center",
-    paddingVertical: 48,
+    paddingVertical: 20,
     gap: 10,
   },
   emptyText: {
@@ -325,12 +325,12 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
   },
   typeBadgeText: {
-    fontSize: 11,
+    fontSize: 13,
     fontFamily: "Inter_600SemiBold",
   },
   msgDate: {
     color: C.dim,
-    fontSize: 11,
+    fontSize: 13,
     fontFamily: "Inter_400Regular",
   },
   msgText: {
@@ -347,7 +347,7 @@ const styles = StyleSheet.create({
   },
   dateText: {
     color: C.dim,
-    fontSize: 11,
+    fontSize: 13,
     fontFamily: "Inter_400Regular",
   },
   replyBox: {
@@ -372,7 +372,7 @@ const styles = StyleSheet.create({
   },
   mattBadgeText: {
     color: C.white,
-    fontSize: 10,
+    fontSize: 12,
     fontFamily: "Inter_700Bold",
     letterSpacing: 0.3,
   },
@@ -390,7 +390,7 @@ const styles = StyleSheet.create({
   },
   pendingText: {
     color: C.dim,
-    fontSize: 11,
+    fontSize: 13,
     fontFamily: "Inter_400Regular",
     fontStyle: "italic",
   },

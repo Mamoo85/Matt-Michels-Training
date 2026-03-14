@@ -283,7 +283,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: 8,
-    marginBottom: 20,
+    marginBottom: 12,
   },
   requestBtnText: {
     color: C.white,
@@ -299,7 +299,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 10,
-    marginBottom: 20,
+    marginBottom: 12,
   },
   successText: {
     color: C.green,
@@ -312,7 +312,7 @@ const styles = StyleSheet.create({
   },
   sectionLabel: {
     color: C.dim,
-    fontSize: 10,
+    fontSize: 12,
     fontFamily: "Inter_700Bold",
     letterSpacing: 2,
     marginBottom: 10,
@@ -381,7 +381,7 @@ const styles = StyleSheet.create({
   },
   emptyState: {
     alignItems: "center",
-    paddingVertical: 48,
+    paddingVertical: 20,
     gap: 10,
   },
   emptyText: {
@@ -418,11 +418,11 @@ const styles = StyleSheet.create({
     marginHorizontal: 12,
   },
   modalBody: {
-    padding: 20,
+    padding: 14,
   },
   docHeader: {
     alignItems: "center",
-    marginBottom: 24,
+    marginBottom: 14,
     paddingBottom: 20,
     borderBottomWidth: 1,
     borderBottomColor: C.border,
@@ -452,11 +452,11 @@ const styles = StyleSheet.create({
     borderLeftColor: C.orange,
     borderRadius: 4,
     padding: 14,
-    marginBottom: 20,
+    marginBottom: 12,
   },
   docNotesLabel: {
     color: C.orange,
-    fontSize: 11,
+    fontSize: 13,
     fontFamily: "Inter_700Bold",
     letterSpacing: 0.5,
     marginBottom: 6,
@@ -469,7 +469,7 @@ const styles = StyleSheet.create({
   },
   docSectionLabel: {
     color: C.dim,
-    fontSize: 10,
+    fontSize: 12,
     fontFamily: "Inter_700Bold",
     letterSpacing: 2,
     marginBottom: 12,
@@ -532,7 +532,7 @@ const styles = StyleSheet.create({
   },
   cuesText: {
     color: C.dim,
-    fontSize: 11,
+    fontSize: 13,
     fontFamily: "Inter_400Regular",
     lineHeight: 16,
     fontStyle: "italic",

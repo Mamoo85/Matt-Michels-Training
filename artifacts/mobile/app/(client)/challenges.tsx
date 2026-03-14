@@ -375,7 +375,7 @@ const styles = StyleSheet.create({
   },
   emptyState: {
     alignItems: "center",
-    paddingVertical: 48,
+    paddingVertical: 20,
     gap: 10,
   },
   emptyText: {
@@ -430,7 +430,7 @@ const styles = StyleSheet.create({
   },
   optInLabel: {
     color: C.dim,
-    fontSize: 11,
+    fontSize: 13,
     fontFamily: "Inter_400Regular",
   },
   logBtn: {
@@ -458,17 +458,17 @@ const styles = StyleSheet.create({
   },
   logEntryDate: {
     color: C.dim,
-    fontSize: 11,
+    fontSize: 13,
     fontFamily: "Inter_400Regular",
   },
   logEntryAmount: {
     color: C.green,
-    fontSize: 11,
+    fontSize: 13,
     fontFamily: "Inter_600SemiBold",
   },
   logEntryNote: {
     color: C.dim,
-    fontSize: 11,
+    fontSize: 13,
     fontFamily: "Inter_400Regular",
     fontStyle: "italic",
   },
@@ -508,7 +508,7 @@ const styles = StyleSheet.create({
   },
   totalLabel: {
     color: C.dim,
-    fontSize: 11,
+    fontSize: 13,
     fontFamily: "Inter_400Regular",
   },
   totalValue: {
@@ -575,7 +575,7 @@ const styles = StyleSheet.create({
   },
   lbGoal: {
     color: C.dim,
-    fontSize: 11,
+    fontSize: 13,
     fontFamily: "Inter_400Regular",
     marginBottom: 14,
   },

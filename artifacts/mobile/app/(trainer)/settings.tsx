@@ -484,18 +484,18 @@ const styles = StyleSheet.create({
   },
   sessionDesc: {
     color: C.dim,
-    fontSize: 11,
+    fontSize: 13,
     fontFamily: "Inter_400Regular",
     marginBottom: 3,
   },
   sessionMeta: {
     color: C.dim,
-    fontSize: 11,
+    fontSize: 13,
     fontFamily: "Inter_400Regular",
   },
   emptyState: {
     alignItems: "center",
-    paddingVertical: 48,
+    paddingVertical: 20,
     gap: 10,
   },
   emptyText: {
@@ -524,7 +524,7 @@ const styles = StyleSheet.create({
   },
   helpMeta: {
     color: C.dim,
-    fontSize: 11,
+    fontSize: 13,
     fontFamily: "Inter_400Regular",
   },
   statusDot: {

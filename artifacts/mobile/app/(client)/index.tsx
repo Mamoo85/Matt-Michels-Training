@@ -259,7 +259,7 @@ const styles = StyleSheet.create({
   },
   statLabel: {
     color: C.dim,
-    fontSize: 10,
+    fontSize: 12,
     fontFamily: "Inter_400Regular",
     marginTop: 2,
     textAlign: "center",
@@ -280,7 +280,7 @@ const styles = StyleSheet.create({
   },
   noteLabel: {
     color: C.orange,
-    fontSize: 11,
+    fontSize: 13,
     fontFamily: "Inter_700Bold",
     letterSpacing: 0.5,
   },
@@ -327,7 +327,7 @@ const styles = StyleSheet.create({
   },
   sectionLabel: {
     color: C.dim,
-    fontSize: 10,
+    fontSize: 12,
     fontFamily: "Inter_700Bold",
     letterSpacing: 2,
     marginBottom: 12,
@@ -367,7 +367,7 @@ const styles = StyleSheet.create({
   },
   logNote: {
     color: C.dim,
-    fontSize: 11,
+    fontSize: 13,
     fontFamily: "Inter_400Regular",
     marginTop: 2,
   },
@@ -382,12 +382,12 @@ const styles = StyleSheet.create({
   },
   logSetsReps: {
     color: C.dim,
-    fontSize: 11,
+    fontSize: 13,
     fontFamily: "Inter_400Regular",
   },
   logDate: {
     color: C.dim,
-    fontSize: 10,
+    fontSize: 12,
     fontFamily: "Inter_400Regular",
   },
 });

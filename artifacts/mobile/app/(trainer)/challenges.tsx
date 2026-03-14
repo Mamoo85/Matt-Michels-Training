@@ -246,7 +246,7 @@ export default function TrainerChallengesScreen() {
                             </View>
                             <Text style={[styles.lbScore, { color: mc }]}>
                               {item.total.toLocaleString()}{" "}
-                              <Text style={{ color: C.muted, fontFamily: "Inter_400Regular", fontSize: 11 }}>
+                              <Text style={{ color: C.muted, fontFamily: "Inter_400Regular", fontSize: 13 }}>
                                 {ch.unit}
                               </Text>
                             </Text>
@@ -394,7 +394,7 @@ const styles = StyleSheet.create({
   },
   emptyState: {
     alignItems: "center",
-    paddingVertical: 48,
+    paddingVertical: 20,
     gap: 10,
   },
   emptyText: {
@@ -435,7 +435,7 @@ const styles = StyleSheet.create({
   },
   challengeMeta: {
     color: C.dim,
-    fontSize: 11,
+    fontSize: 13,
     fontFamily: "Inter_400Regular",
   },
   challengeActions: {
@@ -534,7 +534,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 20,
+    marginBottom: 12,
     borderBottomWidth: 1,
     borderBottomColor: C.border,
     paddingBottom: 16,

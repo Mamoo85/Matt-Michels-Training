@@ -191,10 +191,10 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   scroll: {
-    padding: 20,
+    padding: 14,
   },
   heroSection: {
-    marginBottom: 20,
+    marginBottom: 12,
   },
   heroTag: {
     color: C.orange,
@@ -220,7 +220,7 @@ const styles = StyleSheet.create({
   statsRow: {
     flexDirection: "row",
     gap: 8,
-    marginBottom: 24,
+    marginBottom: 14,
   },
   statCard: {
     flex: 1,
@@ -238,14 +238,14 @@ const styles = StyleSheet.create({
   },
   statLabel: {
     color: C.dim,
-    fontSize: 10,
+    fontSize: 12,
     fontFamily: "Inter_500Medium",
     marginTop: 3,
     textAlign: "center",
   },
   sectionLabel: {
     color: C.dim,
-    fontSize: 10,
+    fontSize: 12,
     fontFamily: "Inter_700Bold",
     letterSpacing: 2,
     marginBottom: 12,
@@ -295,7 +295,7 @@ const styles = StyleSheet.create({
   },
   forLabel: {
     color: C.green,
-    fontSize: 10,
+    fontSize: 12,
     fontFamily: "Inter_700Bold",
     letterSpacing: 2,
     marginBottom: 12,
@@ -321,7 +321,7 @@ const styles = StyleSheet.create({
     borderColor: `${C.orange}33`,
     borderRadius: 8,
     padding: 16,
-    marginBottom: 20,
+    marginBottom: 12,
   },
   guaranteeTop: {
     flexDirection: "row",
@@ -357,7 +357,7 @@ const styles = StyleSheet.create({
     fontFamily: "Inter_400Regular",
     lineHeight: 22,
     textAlign: "center",
-    marginBottom: 20,
+    marginBottom: 12,
   },
   ctaBtn: {
     backgroundColor: C.orange,
