@@ -289,7 +289,7 @@ export default function HomeScreen() {
         >
           <View style={styles.helpCardInner}>
             <View>
-              <Text style={styles.helpTitle}>Matt's Never Wrong</Text>
+              <Text style={styles.helpTitle}>I Can Fix It</Text>
               <Text style={styles.helpSub}>
                 Stuck? Something hurts? Need a workout?
               </Text>
@@ -309,6 +309,17 @@ export default function HomeScreen() {
             </View>
           ))}
         </View>
+
+        {/* JOKE BUTTON */}
+        <Pressable
+          style={styles.jokeBtn}
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+            router.push("/trippy");
+          }}
+        >
+          <Text style={styles.jokeBtnText}>DO NOT CLICK THIS!</Text>
+        </Pressable>
 
         {/* FOOTER */}
         <View style={styles.footer}>
@@ -725,5 +736,23 @@ const styles = StyleSheet.create({
     color: C.orange,
     fontSize: 12,
     fontFamily: "Inter_600SemiBold",
+  },
+  jokeBtn: {
+    marginHorizontal: 16,
+    marginBottom: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderWidth: 2,
+    borderColor: "#ff1493",
+    borderRadius: 8,
+    borderStyle: "dashed",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  jokeBtnText: {
+    color: "#ff1493",
+    fontSize: 12,
+    fontFamily: "Inter_700Bold",
+    letterSpacing: 1,
   },
 });

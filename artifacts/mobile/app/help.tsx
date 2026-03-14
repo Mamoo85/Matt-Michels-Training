@@ -42,7 +42,7 @@ const CATEGORIES: { id: Category; label: string; desc: string }[] = [
   },
 ];
 
-export default function HelpScreen() {
+export default function ICanFixItScreen() {
   const { submitHelpRequest } = useApp();
   const insets = useSafeAreaInsets();
   const [name, setName] = useState("");
@@ -87,7 +87,7 @@ export default function HelpScreen() {
         <Pressable onPress={() => router.back()} style={styles.backBtn}>
           <Feather name="arrow-left" size={20} color={C.dim} />
         </Pressable>
-        <Text style={styles.logo}>Matt's Never Wrong</Text>
+        <Text style={styles.logo}>I Can Fix It</Text>
         <View style={{ width: 36 }} />
       </View>
 
