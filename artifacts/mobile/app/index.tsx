@@ -317,6 +317,31 @@ export default function HomeScreen() {
           </View>
         </Pressable>
 
+        {/* STUDIO RENTAL CARD */}
+        <Pressable
+          style={styles.studioCard}
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            router.push("/studio-rental");
+          }}
+        >
+          <View style={styles.studioCardInner}>
+            <View style={styles.studioIconWrap}>
+              <Feather name="home" size={20} color={C.dim} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.studioLabel}>FOR TRAINERS</Text>
+              <Text style={styles.studioTitle}>Lease studio time</Text>
+              <Text style={styles.studioSub}>
+                Certified trainers — rent the M² gym by the hour or block. Private, fully equipped, no overhead.
+              </Text>
+              <Text style={[styles.studioSub, { color: C.orange, marginTop: 6 }]}>
+                Inquire about availability →
+              </Text>
+            </View>
+          </View>
+        </Pressable>
+
         {/* HELP CTA */}
         <Pressable
           style={styles.helpCard}
@@ -784,6 +809,52 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   classSub: {
+    color: C.dim,
+    fontSize: 12,
+    fontFamily: "Inter_400Regular",
+    lineHeight: 18,
+  },
+  studioCard: {
+    backgroundColor: C.surface,
+    borderWidth: 1,
+    borderColor: C.border,
+    borderRadius: 12,
+    marginHorizontal: 16,
+    marginBottom: 12,
+    overflow: "hidden",
+  },
+  studioCardInner: {
+    padding: 18,
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 14,
+  },
+  studioIconWrap: {
+    width: 40,
+    height: 40,
+    borderRadius: 10,
+    backgroundColor: C.bg,
+    borderWidth: 1,
+    borderColor: C.border,
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+    marginTop: 2,
+  },
+  studioLabel: {
+    color: C.dim,
+    fontSize: 12,
+    fontFamily: "Inter_700Bold",
+    letterSpacing: 1,
+    marginBottom: 4,
+  },
+  studioTitle: {
+    color: C.text,
+    fontSize: 16,
+    fontFamily: "Inter_700Bold",
+    marginBottom: 4,
+  },
+  studioSub: {
     color: C.dim,
     fontSize: 12,
     fontFamily: "Inter_400Regular",

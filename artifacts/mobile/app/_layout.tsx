@@ -32,6 +32,7 @@ function RootLayoutNav() {
       <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen name="login" options={{ headerShown: false }} />
       <Stack.Screen name="help" options={{ headerShown: false }} />
+      <Stack.Screen name="studio-rental" options={{ headerShown: false }} />
       <Stack.Screen name="(client)" options={{ headerShown: false }} />
       <Stack.Screen name="(trainer)" options={{ headerShown: false }} />
     </Stack>
